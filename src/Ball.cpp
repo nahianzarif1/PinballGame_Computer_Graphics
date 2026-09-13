@@ -1,5 +1,6 @@
 #include "Ball.h"
 #include "Mesh.h"
+#include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 
@@ -38,4 +39,14 @@ void Ball::reset() {
     transform.position = glm::vec3(0.0f, -4.0f, 1.5f);
     velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     transform.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+}
+
+void Ball::draw(unsigned int shaderProgram) const {
+    glm::mat4 model = transform.getModelMatrix();
+    
+    // Set uniforms directly using OpenGL
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &color[0]);
+    
+    mesh.draw();
 }

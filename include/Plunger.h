@@ -14,6 +14,7 @@ public:
     Plunger(const glm::vec3& position = glm::vec3(0.0f));
     
     void update(float dt) override;
+    void draw(unsigned int shaderProgram) const override;
     void extend();
     void retract();
     void reset();

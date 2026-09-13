@@ -1,5 +1,6 @@
 #include "Plunger.h"
 #include "Mesh.h"
+#include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 
@@ -41,4 +42,14 @@ void Plunger::retract() {
 void Plunger::reset() {
     transform.position = glm::vec3(0.0f, minPosition, 1.1f);
     springCompression = 0.0f;
+}
+
+void Plunger::draw(unsigned int shaderProgram) const {
+    glm::mat4 model = transform.getModelMatrix();
+    
+    // Set uniforms directly using OpenGL
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &color[0]);
+    
+    mesh.draw();
 }

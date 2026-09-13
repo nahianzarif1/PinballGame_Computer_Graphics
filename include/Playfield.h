@@ -16,6 +16,7 @@ public:
     float calculateZ(float y) const;
     glm::vec3 localToWorld(const glm::vec3& localPos) const;
     void update(float dt) override;
+    void draw(unsigned int shaderProgram) const override;
 };
 
 #endif // PLAYFIELD_H

@@ -1,5 +1,6 @@
 #include "Playfield.h"
 #include "Mesh.h"
+#include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <cmath>
@@ -29,4 +30,23 @@ glm::vec3 Playfield::localToWorld(const glm::vec3& localPos) const {
 void Playfield::update(float dt) {
     // Apply tilt rotation to transform
     transform.rotation.x = tiltAngle;
+}
+
+void Playfield::draw(unsigned int shaderProgram) const {
+    glm::mat4 model = glm::mat4(1.0f);
+    
+    // Apply position
+    model = glm::translate(model, transform.position);
+    
+    // Apply tilt rotation around X axis
+    model = glm::rotate(model, glm::radians(tiltAngle), glm::vec3(1.0f, 0.0f, 0.0f));
+    
+    // Apply scale
+    model = glm::scale(model, transform.scale);
+    
+    // Set uniforms directly using OpenGL
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &color[0]);
+    
+    mesh.draw();
 }

@@ -1106,4 +1106,6 @@ CMakeFiles/PinballOpenGL.dir/src/Flipper.cpp.o: \
   /opt/homebrew/include/glm/gtc/../vector_relational.hpp \
   /opt/homebrew/include/glm/gtc/../common.hpp \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Mesh.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/glad/glad.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h \
   /opt/homebrew/include/glm/gtc/matrix_transform.hpp

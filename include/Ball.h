@@ -13,6 +13,7 @@ public:
     Ball(float radius = 0.25f);
     
     void update(float dt) override;
+    void draw(unsigned int shaderProgram) const override;
     void applyForce(const glm::vec3& force);
     void bounce(const glm::vec3& normal);
     void reset();

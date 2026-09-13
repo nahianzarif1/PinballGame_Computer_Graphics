@@ -7,6 +7,8 @@
 #include <iostream>
 #include <cmath>
 
+const float PI = 3.14159265358979323846f;
+
 PinballMachine::PinballMachine() {
     initialize();
 }
@@ -44,8 +46,15 @@ void PinballMachine::initialize() {
         lights[i].intensity = 1.0f;
         
         // Set light colors to match bumpers
+        lights[i].ambient = bumpers[i].color * 0.2f;
         lights[i].diffuse = bumpers[i].color;
         lights[i].specular = bumpers[i].color;
+        
+        // Attenuation values
+        lights[i].constant = 1.0f;
+        lights[i].linear = 0.09f;
+        lights[i].quadratic = 0.032f;
+        lights[i].enabled = true;
     }
     
     // Create machine structure
@@ -91,6 +100,8 @@ void PinballMachine::createMachineStructure() {
     rightRail.mesh = createCylinder(0.08f, 12.0f, 24);
     rightRail.transform.position = glm::vec3(3.3f, 0.0f, 1.0f);
     rightRail.color = glm::vec3(0.7f, 0.7f, 0.75f);
+    
+    std::cout << "Machine structure created with " << base.mesh.vertices.size() << " base vertices" << std::endl;
 }
 
 void PinballMachine::update(float dt) {
@@ -318,4 +329,134 @@ void PinballMachine::resetSelectedLight() {
 
 void PinballMachine::setShadingMode(ShadingMode mode) {
     shadingMode = mode;
+}
+
+Mesh PinballMachine::createCube(float width, float height, float depth) {
+    Mesh mesh;
+    
+    float hw = width / 2.0f;
+    float hh = height / 2.0f;
+    float hd = depth / 2.0f;
+    
+    // 8 vertices of a cube
+    glm::vec3 positions[8] = {
+        glm::vec3(-hw, -hh, -hd),
+        glm::vec3( hw, -hh, -hd),
+        glm::vec3( hw,  hh, -hd),
+        glm::vec3(-hw,  hh, -hd),
+        glm::vec3(-hw, -hh,  hd),
+        glm::vec3( hw, -hh,  hd),
+        glm::vec3( hw,  hh,  hd),
+        glm::vec3(-hw,  hh,  hd)
+    };
+    
+    // 6 faces with normals
+    glm::vec3 normals[6] = {
+        glm::vec3(0, 0, -1), // Front
+        glm::vec3(0, 0,  1), // Back
+        glm::vec3(-1, 0, 0), // Left
+        glm::vec3( 1, 0, 0), // Right
+        glm::vec3(0, -1, 0), // Bottom
+        glm::vec3(0,  1, 0)  // Top
+    };
+    
+    unsigned int faceIndices[6][4] = {
+        {0, 1, 2, 3}, // Front
+        {4, 7, 6, 5}, // Back
+        {0, 4, 7, 3}, // Left
+        {1, 5, 6, 2}, // Right
+        {0, 4, 5, 1}, // Bottom
+        {3, 7, 6, 2}  // Top
+    };
+    
+    glm::vec3 baseColor(1.0f, 1.0f, 1.0f);
+    
+    for (int face = 0; face < 6; face++) {
+        // Two triangles per face
+        int i0 = faceIndices[face][0];
+        int i1 = faceIndices[face][1];
+        int i2 = faceIndices[face][2];
+        int i3 = faceIndices[face][3];
+        
+        // Triangle 1
+        mesh.vertices.push_back({positions[i0], normals[face], baseColor});
+        mesh.vertices.push_back({positions[i1], normals[face], baseColor});
+        mesh.vertices.push_back({positions[i2], normals[face], baseColor});
+        
+        // Triangle 2
+        mesh.vertices.push_back({positions[i0], normals[face], baseColor});
+        mesh.vertices.push_back({positions[i2], normals[face], baseColor});
+        mesh.vertices.push_back({positions[i3], normals[face], baseColor});
+    }
+    
+    mesh.setupMesh();
+    return mesh;
+}
+
+Mesh PinballMachine::createCylinder(float radius, float height, int segments) {
+    Mesh mesh;
+    
+    float halfHeight = height / 2.0f;
+    glm::vec3 color(1.0f, 1.0f, 1.0f);
+    
+    // Generate vertices for cylinder sides
+    for (int i = 0; i < segments; i++) {
+        float theta0 = 2.0f * PI * i / segments;
+        float theta1 = 2.0f * PI * (i + 1) / segments;
+        
+        float x0 = radius * cos(theta0);
+        float y0 = radius * sin(theta0);
+        float x1 = radius * cos(theta1);
+        float y1 = radius * sin(theta1);
+        
+        // Normal for side (pointing outward)
+        glm::vec3 normal0 = glm::normalize(glm::vec3(x0, y0, 0.0f));
+        glm::vec3 normal1 = glm::normalize(glm::vec3(x1, y1, 0.0f));
+        
+        // Two triangles per segment
+        // Triangle 1
+        mesh.vertices.push_back({glm::vec3(x0, y0, -halfHeight), normal0, color});
+        mesh.vertices.push_back({glm::vec3(x1, y1, -halfHeight), normal1, color});
+        mesh.vertices.push_back({glm::vec3(x1, y1,  halfHeight), normal1, color});
+        
+        // Triangle 2
+        mesh.vertices.push_back({glm::vec3(x0, y0, -halfHeight), normal0, color});
+        mesh.vertices.push_back({glm::vec3(x1, y1,  halfHeight), normal1, color});
+        mesh.vertices.push_back({glm::vec3(x0, y0,  halfHeight), normal0, color});
+    }
+    
+    // Top cap
+    glm::vec3 topNormal(0.0f, 0.0f, 1.0f);
+    for (int i = 0; i < segments; i++) {
+        float theta0 = 2.0f * PI * i / segments;
+        float theta1 = 2.0f * PI * (i + 1) / segments;
+        
+        float x0 = radius * cos(theta0);
+        float y0 = radius * sin(theta0);
+        float x1 = radius * cos(theta1);
+        float y1 = radius * sin(theta1);
+        
+        mesh.vertices.push_back({glm::vec3(0.0f, 0.0f, halfHeight), topNormal, color});
+        mesh.vertices.push_back({glm::vec3(x0, y0, halfHeight), topNormal, color});
+        mesh.vertices.push_back({glm::vec3(x1, y1, halfHeight), topNormal, color});
+    }
+    
+    // Bottom cap
+    glm::vec3 bottomNormal(0.0f, 0.0f, -1.0f);
+    for (int i = 0; i < segments; i++) {
+        float theta0 = 2.0f * PI * i / segments;
+        float theta1 = 2.0f * PI * (i + 1) / segments;
+        
+        float x0 = radius * cos(theta0);
+        float y0 = radius * sin(theta0);
+        float x1 = radius * cos(theta1);
+        float y1 = radius * sin(theta1);
+        
+        mesh.vertices.push_back({glm::vec3(0.0f, 0.0f, -halfHeight), bottomNormal, color});
+        mesh.vertices.push_back({glm::vec3(x1, y1, -halfHeight), bottomNormal, color});
+        mesh.vertices.push_back({glm::vec3(x0, y0, -halfHeight), bottomNormal, color});
+    }
+    
+    mesh.setupMesh();
+    return mesh;
 }

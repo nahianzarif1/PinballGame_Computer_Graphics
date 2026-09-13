@@ -19,6 +19,7 @@ public:
     void rotate(float direction);
     void setAngle(float newAngle);
     glm::mat4 getModelMatrix() const;
+    void draw(unsigned int shaderProgram) const override;
     void reset();
 };
 

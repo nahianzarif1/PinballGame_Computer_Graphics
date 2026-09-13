@@ -969,6 +969,8 @@ CMakeFiles/PinballOpenGL.dir/src/Ball.cpp.o: /Users/nahianzarif/Desktop/NLP/Pinb
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdarg.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdint.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/glad/glad.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Ball.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/GameObject.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Mesh.h \
@@ -2078,6 +2080,8 @@ CMakeFiles/PinballOpenGL.dir/src/Bumper.cpp.o: /Users/nahianzarif/Desktop/NLP/Pi
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdarg.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdint.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/glad/glad.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Ball.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Bumper.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/GameObject.h \
@@ -4241,6 +4245,8 @@ CMakeFiles/PinballOpenGL.dir/src/Flipper.cpp.o: /Users/nahianzarif/Desktop/NLP/P
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdarg.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdint.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/glad/glad.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Flipper.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/GameObject.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Mesh.h \
@@ -8620,6 +8626,8 @@ CMakeFiles/PinballOpenGL.dir/src/Playfield.cpp.o: /Users/nahianzarif/Desktop/NLP
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdarg.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdint.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/glad/glad.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/GameObject.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Mesh.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Playfield.h \
@@ -9729,6 +9737,8 @@ CMakeFiles/PinballOpenGL.dir/src/Plunger.cpp.o: /Users/nahianzarif/Desktop/NLP/P
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdarg.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdint.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/glad/glad.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/GameObject.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Mesh.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Plunger.h \

@@ -1,6 +1,7 @@
 #include "Bumper.h"
 #include "Ball.h"
 #include "Mesh.h"
+#include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <cmath>
@@ -49,4 +50,14 @@ void Bumper::onHit() {
     hit = true;
     hitTimer = 0.2f; // Flash for 0.2 seconds
     color = glm::vec3(1.0f, 1.0f, 0.3f); // Flash yellow
+}
+
+void Bumper::draw(unsigned int shaderProgram) const {
+    glm::mat4 model = transform.getModelMatrix();
+    
+    // Set uniforms directly using OpenGL
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &color[0]);
+    
+    mesh.draw();
 }

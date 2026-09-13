@@ -72,6 +72,8 @@ public:
 private:
     void createMachineStructure();
     void updateObjectZFromPlayfield(GameObject& obj);
+    Mesh createCube(float width, float height, float depth);
+    Mesh createCylinder(float radius, float height, int segments);
 };
 
 #endif // PINBALLMACHINE_H

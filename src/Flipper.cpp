@@ -1,5 +1,6 @@
 #include "Flipper.h"
 #include "Mesh.h"
+#include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/glm.hpp>
@@ -55,6 +56,16 @@ glm::mat4 Flipper::getModelMatrix() const {
     model = glm::scale(model, transform.scale);
     
     return model;
+}
+
+void Flipper::draw(unsigned int shaderProgram) const {
+    glm::mat4 model = getModelMatrix();
+    
+    // Set uniforms directly using OpenGL
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &color[0]);
+    
+    mesh.draw();
 }
 
 void Flipper::reset() {

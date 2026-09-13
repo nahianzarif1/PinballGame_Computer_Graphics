@@ -10,7 +10,7 @@ public:
     Transform transform;
     Mesh mesh;
     std::string name;
-    glm::vec3 color; 
+    glm::vec3 color;
     
     GameObject(const std::string& name = "GameObject");
     virtual ~GameObject() = default;
