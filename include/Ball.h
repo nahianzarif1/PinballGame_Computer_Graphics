@@ -1,0 +1,21 @@
+#ifndef BALL_H
+#define BALL_H
+
+#include "GameObject.h"
+#include <glm/glm.hpp>
+
+class Ball : public GameObject {
+public:
+    glm::vec3 velocity{0.0f, 0.0f, 0.0f};
+    float radius;
+    float restitution; // Bounciness (0.8-0.95)
+    
+    Ball(float radius = 0.25f);
+    
+    void update(float dt) override;
+    void applyForce(const glm::vec3& force);
+    void bounce(const glm::vec3& normal);
+    void reset();
+};
+
+#endif // BALL_H

@@ -1,0 +1,365 @@
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
+#include <cmath>
+
+#include "Shader.h"
+#include "Camera.h"
+#include "PinballMachine.h"
+#include "Mesh.h"
+
+// Window settings
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
+
+// Global state
+PinballMachine* machine = nullptr;
+Shader* phongShader = nullptr;
+Shader* gouraudShader = nullptr;
+Shader* flatShader = nullptr;
+float lastFrame = 0.0f;
+float deltaTime = 0.0f;
+
+// Control state
+bool firstMouse = true;
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+
+// Function prototypes
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void processInput(GLFWwindow* window);
+void renderUI(GLFWwindow* window);
+
+int main() {
+    // Initialize GLFW
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+    
+    // Create window
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "3D Interactive Pinball Machine", NULL, NULL);
+    if (window == NULL) {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+    
+    // Capture mouse
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    
+    // Load GLAD
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
+    
+    // Enable depth testing
+    glEnable(GL_DEPTH_TEST);
+    
+    // Load shaders
+    try {
+        phongShader = new Shader("shaders/phong.vert", "shaders/phong.frag");
+        gouraudShader = new Shader("shaders/gouraud.vert", "shaders/gouraud.frag");
+        flatShader = new Shader("shaders/flat.vert", "shaders/flat.frag");
+    } catch (...) {
+        std::cout << "Failed to load shaders. Make sure shaders directory is in the build folder." << std::endl;
+        return -1;
+    }
+    
+    // Create pinball machine
+    machine = new PinballMachine();
+    
+    // Set clear color (dark background for better contrast)
+    glClearColor(0.05f, 0.05f, 0.08f, 1.0f);
+    
+    std::cout << "\n========================================" << std::endl;
+    std::cout << "   3D INTERACTIVE PINBALL MACHINE" << std::endl;
+    std::cout << "========================================\n" << std::endl;
+    std::cout << "CONTROLS:" << std::endl;
+    std::cout << "----------------------------------------" << std::endl;
+    std::cout << "OBJECT CONTROL:" << std::endl;
+    std::cout << "  TAB    - Select next object" << std::endl;
+    std::cout << "  W/S    - Move forward/backward" << std::endl;
+    std::cout << "  A/D    - Move left/right" << std::endl;
+    std::cout << "  Q/E    - Move up/down" << std::endl;
+    std::cout << "  Z/X    - Rotate (flippers only)" << std::endl;
+    std::cout << "  R      - Reset selected object" << std::endl;
+    std::cout << "\nLIGHT CONTROL:" << std::endl;
+    std::cout << "  F1/F2/F3 - Select Light 1/2/3" << std::endl;
+    std::cout << "  W/S/A/D/Q/E - Move selected light" << std::endl;
+    std::cout << "  +/-    - Adjust light intensity" << std::endl;
+    std::cout << "  R      - Reset selected light" << std::endl;
+    std::cout << "\nSHADING:" << std::endl;
+    std::cout << "  1      - Flat shading" << std::endl;
+    std::cout << "  2      - Gouraud shading" << std::endl;
+    std::cout << "  3      - Phong shading" << std::endl;
+    std::cout << "\nCAMERA:" << std::endl;
+    std::cout << "  Mouse  - Look around" << std::endl;
+    std::cout << "  Scroll - Zoom" << std::endl;
+    std::cout << "\nOTHER:" << std::endl;
+    std::cout << "  ESC    - Exit" << std::endl;
+    std::cout << "========================================\n" << std::endl;
+    
+    // Main game loop
+    while (!glfwWindowShouldClose(window)) {
+        // Calculate delta time
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        
+        // Process input
+        processInput(window);
+        
+        // Update machine
+        machine->update(deltaTime);
+        
+        // Render
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        // Select shader based on shading mode
+        Shader* currentShader;
+        switch (machine->getShadingMode()) {
+            case ShadingMode::FLAT:
+                currentShader = flatShader;
+                break;
+            case ShadingMode::GOURAUD:
+                currentShader = gouraudShader;
+                break;
+            case ShadingMode::PHONG:
+            default:
+                currentShader = phongShader;
+                break;
+        }
+        
+        currentShader->use();
+        
+        // Set view and projection matrices
+        glm::mat4 view = machine->camera.getViewMatrix();
+        glm::mat4 projection = machine->camera.getProjectionMatrix((float)SCR_WIDTH / (float)SCR_HEIGHT);
+        
+        currentShader->setMat4("view", view);
+        currentShader->setMat4("projection", projection);
+        
+        // Render machine
+        machine->render(currentShader->ID);
+        
+        // Render UI info
+        renderUI(window);
+        
+        // Swap buffers and poll events
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+    
+    // Cleanup
+    delete machine;
+    delete phongShader;
+    delete gouraudShader;
+    delete flatShader;
+    
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+    
+    // Camera movement (WASD + QE for up/down)
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+        // Shift held - camera movement
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            machine->camera.processKeyboard(0, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            machine->camera.processKeyboard(1, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            machine->camera.processKeyboard(2, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            machine->camera.processKeyboard(3, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+            machine->camera.processKeyboard(4, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+            machine->camera.processKeyboard(5, deltaTime);
+    } else {
+        // No shift - object/light control
+        glm::vec3 movement(0.0f);
+        
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            movement.y = 1.0f;
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            movement.y = -1.0f;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            movement.x = -1.0f;
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            movement.x = 1.0f;
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+            movement.z = 1.0f;
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+            movement.z = -1.0f;
+        
+        if (movement != glm::vec3(0.0f)) {
+            if (machine->selectionMode == SelectionMode::OBJECT) {
+                machine->moveSelectedObject(movement);
+            } else {
+                machine->moveSelectedLight(movement);
+            }
+        }
+        
+        // Rotation for flippers
+        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+            machine->rotateSelectedObject(-1.0f);
+        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+            machine->rotateSelectedObject(1.0f);
+        
+        // Light intensity
+        if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
+            machine->adjustLightIntensity(1.0f);
+        if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
+            machine->adjustLightIntensity(-1.0f);
+        
+        // Reset
+        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+            if (machine->selectionMode == SelectionMode::OBJECT) {
+                machine->resetSelectedObject();
+            } else {
+                machine->resetSelectedLight();
+            }
+        }
+    }
+    
+    // Object selection (TAB)
+    static bool tabPressed = false;
+    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS && !tabPressed) {
+        machine->selectNextObject();
+        tabPressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE) {
+        tabPressed = false;
+    }
+    
+    // Light selection (F1, F2, F3)
+    static bool f1Pressed = false;
+    static bool f2Pressed = false;
+    static bool f3Pressed = false;
+    
+    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS && !f1Pressed) {
+        machine->selectLight(0);
+        f1Pressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_RELEASE) {
+        f1Pressed = false;
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && !f2Pressed) {
+        machine->selectLight(1);
+        f2Pressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_RELEASE) {
+        f2Pressed = false;
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS && !f3Pressed) {
+        machine->selectLight(2);
+        f3Pressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_RELEASE) {
+        f3Pressed = false;
+    }
+    
+    // Shading mode (1, 2, 3)
+    static bool key1Pressed = false;
+    static bool key2Pressed = false;
+    static bool key3Pressed = false;
+    
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !key1Pressed) {
+        machine->setShadingMode(ShadingMode::FLAT);
+        key1Pressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE) {
+        key1Pressed = false;
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && !key2Pressed) {
+        machine->setShadingMode(ShadingMode::GOURAUD);
+        key2Pressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE) {
+        key2Pressed = false;
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS && !key3Pressed) {
+        machine->setShadingMode(ShadingMode::PHONG);
+        key3Pressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_RELEASE) {
+        key3Pressed = false;
+    }
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+    
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    
+    lastX = xpos;
+    lastY = ypos;
+    
+    machine->camera.processMouseMovement(xoffset, yoffset);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    machine->camera.processMouseScroll(yoffset);
+}
+
+void renderUI(GLFWwindow* window) {
+    // Simple console-based UI info (could be extended with text rendering)
+    static int frameCount = 0;
+    static float lastUIUpdate = 0.0f;
+    
+    frameCount++;
+    float currentTime = glfwGetTime();
+    
+    if (currentTime - lastUIUpdate >= 1.0f) {
+        std::string modeStr;
+        switch (machine->getShadingMode()) {
+            case ShadingMode::FLAT: modeStr = "FLAT"; break;
+            case ShadingMode::GOURAUD: modeStr = "GOURAUD"; break;
+            case ShadingMode::PHONG: modeStr = "PHONG"; break;
+        }
+        
+        std::string selectionStr;
+        if (machine->selectionMode == SelectionMode::OBJECT) {
+            const char* objectNames[] = {"Ball", "Bumper 1", "Bumper 2", "Bumper 3", "Left Flipper", "Right Flipper", "Plunger"};
+            selectionStr = "OBJECT: " + std::string(objectNames[machine->selectedObjectIndex]);
+        } else {
+            selectionStr = "LIGHT: " + std::to_string(machine->selectedLightIndex + 1);
+        }
+        
+        glfwSetWindowTitle(window, ("3D Pinball - " + modeStr + " - " + selectionStr + " - " + std::to_string(frameCount) + " FPS").c_str());
+        
+        frameCount = 0;
+        lastUIUpdate = currentTime;
+    }
+}

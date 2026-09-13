@@ -1,0 +1,3 @@
+/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build/CMakeFiles/PinballOpenGL.dir
+/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build/CMakeFiles/edit_cache.dir
+/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build/CMakeFiles/rebuild_cache.dir

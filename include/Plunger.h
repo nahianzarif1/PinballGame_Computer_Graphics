@@ -1,0 +1,22 @@
+#ifndef PLUNGER_H
+#define PLUNGER_H
+
+#include "GameObject.h"
+#include <glm/glm.hpp>
+
+class Plunger : public GameObject {
+public:
+    float minPosition;
+    float maxPosition;
+    float speed;
+    float springCompression;
+    
+    Plunger(const glm::vec3& position = glm::vec3(0.0f));
+    
+    void update(float dt) override;
+    void extend();
+    void retract();
+    void reset();
+};
+
+#endif // PLUNGER_H
