@@ -6,12 +6,13 @@
 #include <glm/glm.hpp>
 #include <cmath>
 
-Bumper::Bumper(float radius, const glm::vec3& position) 
-    : radius(radius), hit(false), hitTimer(0.0f) {
+Bumper::Bumper(float radius, const glm::vec3& position)
+    : radius(radius), height(0.45f), hit(false), hitTimer(0.0f) {
     name = "Bumper";
-    mesh = createCylinder(radius, 0.6f, 24);
+    mesh = createCylinder(radius, height, 28);
     transform.position = position;
-    color = glm::vec3(1.0f, 0.3f, 0.3f); // Red bumper
+    restColor = glm::vec3(1.0f, 0.3f, 0.3f);
+    color = restColor;
 }
 
 void Bumper::update(float dt) {
@@ -19,45 +20,45 @@ void Bumper::update(float dt) {
         hitTimer -= dt;
         if (hitTimer <= 0.0f) {
             hit = false;
-            color = glm::vec3(1.0f, 0.3f, 0.3f); // Return to red
+            color = restColor;
         }
     }
 }
 
 void Bumper::checkCollision(Ball& ball) {
-    glm::vec3 bumperCenter = transform.position;
-    glm::vec3 ballCenter = ball.transform.position;
-    
-    float distance = glm::length(ballCenter - bumperCenter);
+    glm::vec2 bumperXY(transform.position.x, transform.position.y);
+    glm::vec2 ballXY(ball.transform.position.x, ball.transform.position.y);
+    glm::vec2 delta = ballXY - bumperXY;
+    float distance = glm::length(delta);
     float minDistance = radius + ball.radius;
-    
+
+    if (distance < 1e-5f) {
+        delta = glm::vec2(0.0f, 1.0f);
+        distance = 1e-5f;
+    }
+
     if (distance < minDistance) {
-        // Collision detected
-        glm::vec3 normal = glm::normalize(ballCenter - bumperCenter);
-        
-        // Move ball out of collision
+        glm::vec2 normal = delta / distance;
         float overlap = minDistance - distance;
-        ball.transform.position += normal * overlap;
-        
-        // Bounce
-        ball.bounce(normal);
-        
+        ball.transform.position.x += normal.x * overlap;
+        ball.transform.position.y += normal.y * overlap;
+
+        glm::vec3 n(normal.x, normal.y, 0.0f);
+        ball.bounce(n);
+        ball.velocity += n * impulse;
         onHit();
     }
 }
 
 void Bumper::onHit() {
     hit = true;
-    hitTimer = 0.2f; // Flash for 0.2 seconds
-    color = glm::vec3(1.0f, 1.0f, 0.3f); // Flash yellow
+    hitTimer = 0.18f;
+    color = glm::vec3(1.0f, 1.0f, 0.45f);
 }
 
 void Bumper::draw(unsigned int shaderProgram) const {
     glm::mat4 model = transform.getModelMatrix();
-    
-    // Set uniforms directly using OpenGL
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
     glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &color[0]);
-    
     mesh.draw();
 }

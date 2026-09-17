@@ -1,7 +1,7 @@
 #include "Mesh.h"
 #include <glad/glad.h>
 #include <cmath>
-#include <iostream>
+#include <utility>
 
 const float PI = 3.14159265358979323846f;
 
@@ -11,7 +11,34 @@ Mesh::~Mesh() {
     clear();
 }
 
+Mesh::Mesh(Mesh&& other) noexcept
+    : VAO(other.VAO), VBO(other.VBO), EBO(other.EBO),
+      vertices(std::move(other.vertices)), indices(std::move(other.indices)) {
+    other.VAO = 0;
+    other.VBO = 0;
+    other.EBO = 0;
+}
+
+Mesh& Mesh::operator=(Mesh&& other) noexcept {
+    if (this != &other) {
+        clear();
+        VAO = other.VAO;
+        VBO = other.VBO;
+        EBO = other.EBO;
+        vertices = std::move(other.vertices);
+        indices = std::move(other.indices);
+        other.VAO = 0;
+        other.VBO = 0;
+        other.EBO = 0;
+    }
+    return *this;
+}
+
 void Mesh::setupMesh() {
+    if (vertices.empty()) {
+        return;
+    }
+
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -40,11 +67,14 @@ void Mesh::setupMesh() {
 }
 
 void Mesh::draw() const {
+    if (VAO == 0) {
+        return;
+    }
     glBindVertexArray(VAO);
     if (!indices.empty()) {
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
     } else {
-        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size()));
     }
     glBindVertexArray(0);
 }
@@ -53,6 +83,9 @@ void Mesh::clear() {
     if (VAO) glDeleteVertexArrays(1, &VAO);
     if (VBO) glDeleteBuffers(1, &VBO);
     if (EBO) glDeleteBuffers(1, &EBO);
+    VAO = 0;
+    VBO = 0;
+    EBO = 0;
     vertices.clear();
     indices.clear();
 }

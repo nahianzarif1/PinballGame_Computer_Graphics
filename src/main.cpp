@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 #include "Shader.h"
 #include "Camera.h"
@@ -40,6 +41,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
     
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -57,7 +59,7 @@ int main() {
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
     
-    // Capture mouse
+    // Capture mouse for camera control
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
     // Load GLAD
@@ -66,24 +68,32 @@ int main() {
         return -1;
     }
     
-    // Enable depth testing
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
     
     // Load shaders
     try {
         phongShader = new Shader("shaders/phong.vert", "shaders/phong.frag");
         gouraudShader = new Shader("shaders/gouraud.vert", "shaders/gouraud.frag");
         flatShader = new Shader("shaders/flat.vert", "shaders/flat.frag");
+        std::cout << "Shaders loaded successfully" << std::endl;
     } catch (...) {
         std::cout << "Failed to load shaders. Make sure shaders directory is in the build folder." << std::endl;
         return -1;
     }
     
+    // Test simple rendering
+    std::cout << "Testing basic rendering..." << std::endl;
+    
     // Create pinball machine
     machine = new PinballMachine();
     
-    // Set clear color (dark background for better contrast)
-    glClearColor(0.05f, 0.05f, 0.08f, 1.0f);
+    glClearColor(0.07f, 0.08f, 0.12f, 1.0f);
+    
+    // Disable backface culling for debugging
+    // glEnable(GL_CULL_FACE);
+    // glCullFace(GL_BACK);
+    // glFrontFace(GL_CCW);
     
     std::cout << "\n========================================" << std::endl;
     std::cout << "   3D INTERACTIVE PINBALL MACHINE" << std::endl;
@@ -95,8 +105,12 @@ int main() {
     std::cout << "  W/S    - Move forward/backward" << std::endl;
     std::cout << "  A/D    - Move left/right" << std::endl;
     std::cout << "  Q/E    - Move up/down" << std::endl;
-    std::cout << "  Z/X    - Rotate (flippers only)" << std::endl;
+    std::cout << "  Z/X    - Nudge flipper angle" << std::endl;
     std::cout << "  R      - Reset selected object" << std::endl;
+    std::cout << "\nPINBALL:" << std::endl;
+    std::cout << "  LEFT ARROW  - Left flipper" << std::endl;
+    std::cout << "  RIGHT ARROW - Right flipper" << std::endl;
+    std::cout << "  SPACE / DOWN - Hold to pull plunger, release to launch" << std::endl;
     std::cout << "\nLIGHT CONTROL:" << std::endl;
     std::cout << "  F1/F2/F3 - Select Light 1/2/3" << std::endl;
     std::cout << "  W/S/A/D/Q/E - Move selected light" << std::endl;
@@ -148,12 +162,13 @@ int main() {
         
         // Set view and projection matrices
         glm::mat4 view = machine->camera.getViewMatrix();
-        glm::mat4 projection = machine->camera.getProjectionMatrix((float)SCR_WIDTH / (float)SCR_HEIGHT);
+        int fbw = SCR_WIDTH, fbh = SCR_HEIGHT;
+        glfwGetFramebufferSize(window, &fbw, &fbh);
+        glm::mat4 projection = machine->camera.getProjectionMatrix((float)fbw / (float)std::max(fbh, 1));
         
         currentShader->setMat4("view", view);
         currentShader->setMat4("projection", projection);
         
-        // Render machine
         machine->render(currentShader->ID);
         
         // Render UI info
@@ -177,6 +192,16 @@ int main() {
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    bool leftFlip = glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS;
+    bool rightFlip = glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ||
+                     glfwGetKey(window, GLFW_KEY_SLASH) == GLFW_PRESS ||
+                     glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS;
+    bool pullPlunger = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS ||
+                       glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS;
+    machine->setLeftFlipperPowered(leftFlip);
+    machine->setRightFlipperPowered(rightFlip);
+    machine->setPlungerPulling(pullPlunger);
     
     // Camera movement (WASD + QE for up/down)
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {

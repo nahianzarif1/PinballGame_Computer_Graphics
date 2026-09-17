@@ -39,5 +39,9 @@ target_link_libraries(${PROJECT_NAME}
     ${GLM_LIBRARIES}
 )
 
-# Copy shaders to build directory
+# Copy shaders to build directory at configure and after each build
 file(COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${CMAKE_BINARY_DIR})
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/shaders
+            ${CMAKE_BINARY_DIR}/shaders)

@@ -18,13 +18,16 @@ public:
 
     Mesh();
     ~Mesh();
-    
+    Mesh(const Mesh&) = delete;
+    Mesh& operator=(const Mesh&) = delete;
+    Mesh(Mesh&& other) noexcept;
+    Mesh& operator=(Mesh&& other) noexcept;
+
     void setupMesh();
     void draw() const;
     void clear();
 };
 
-// Geometry generation functions with exact mathematical vertices
 Mesh createCube(float width = 1.0f, float height = 1.0f, float depth = 1.0f);
 Mesh createPlane(float width = 1.0f, float depth = 1.0f);
 Mesh createCylinder(float radius, float height, int segments);

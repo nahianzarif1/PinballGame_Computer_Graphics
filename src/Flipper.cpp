@@ -2,72 +2,108 @@
 #include "Mesh.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include <glm/glm.hpp>
+#include <algorithm>
+#include <cmath>
 
-Flipper::Flipper(bool isLeft, const glm::vec3& pivotParam) 
-    : isLeft(isLeft), angle(0.0f) {
+Flipper::Flipper(bool isLeft, const glm::vec3& /*pivotParam*/)
+    : isLeft(isLeft), angle(0.0f), angularVelocity(0.0f), powered(false) {
     name = isLeft ? "LeftFlipper" : "RightFlipper";
-    mesh = createFlipper(1.5f, 0.25f, 0.15f);
-    
+    length = 1.55f;
+    width = 0.22f;
+    height = 0.16f;
+    mesh = createCube(length, width, height);
+
     if (isLeft) {
-        minAngle = -30.0f;
-        maxAngle = 30.0f;
-        color = glm::vec3(0.2f, 0.6f, 1.0f); // Blue
-        pivot = glm::vec3(-1.5f, -4.0f, 1.3f);
+        restAngle = -28.0f;
+        activeAngle = 48.0f;
+        color = glm::vec3(0.25f, 0.62f, 1.0f);
+        pivot = glm::vec3(-1.85f, -4.55f, 1.08f);
     } else {
-        minAngle = -30.0f;
-        maxAngle = 30.0f;
-        color = glm::vec3(0.2f, 0.6f, 1.0f); // Blue
-        pivot = glm::vec3(1.5f, -4.0f, 1.3f);
+        restAngle = 28.0f;
+        activeAngle = -48.0f;
+        color = glm::vec3(0.25f, 0.62f, 1.0f);
+        pivot = glm::vec3(1.85f, -4.55f, 1.08f);
     }
-    
-    angularSpeed = 180.0f; // Degrees per second
+
+    angle = restAngle;
+    angularSpeed = 720.0f;
     transform.position = pivot;
 }
 
 void Flipper::update(float dt) {
-    // Update is handled by rotation control
+    float target = powered ? activeAngle : restAngle;
+    float prev = angle;
+    float diff = target - angle;
+    float maxStep = angularSpeed * dt;
+
+    if (std::abs(diff) <= maxStep) {
+        angle = target;
+    } else {
+        angle += (diff > 0.0f ? 1.0f : -1.0f) * maxStep;
+    }
+
+    float lo = std::min(restAngle, activeAngle);
+    float hi = std::max(restAngle, activeAngle);
+    angle = std::clamp(angle, lo, hi);
+
+    if (dt > 1e-6f) {
+        angularVelocity = (angle - prev) / dt;
+    } else {
+        angularVelocity = 0.0f;
+    }
 }
 
 void Flipper::rotate(float direction) {
-    angle += direction * angularSpeed * 0.016f; // Assume ~60fps
-    
-    if (angle < minAngle) angle = minAngle;
-    if (angle > maxAngle) angle = maxAngle;
+    angle += direction * 4.0f;
+    float lo = std::min(restAngle, activeAngle);
+    float hi = std::max(restAngle, activeAngle);
+    angle = std::clamp(angle, lo, hi);
+}
+
+void Flipper::setPowered(bool on) {
+    powered = on;
 }
 
 void Flipper::setAngle(float newAngle) {
-    angle = newAngle;
-    if (angle < minAngle) angle = minAngle;
-    if (angle > maxAngle) angle = maxAngle;
+    float lo = std::min(restAngle, activeAngle);
+    float hi = std::max(restAngle, activeAngle);
+    angle = std::clamp(newAngle, lo, hi);
+}
+
+glm::vec2 Flipper::alongDirection() const {
+    float rad = glm::radians(angle);
+    if (isLeft) {
+        return glm::vec2(std::cos(rad), std::sin(rad));
+    }
+    return glm::vec2(-std::cos(rad), -std::sin(rad));
 }
 
 glm::mat4 Flipper::getModelMatrix() const {
     glm::mat4 model = glm::mat4(1.0f);
-    
-    // Translate to pivot
     model = glm::translate(model, pivot);
-    
-    // Rotate around Z axis
     model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
-    
-    // Scale
+    float offsetX = isLeft ? (length * 0.5f) : (-length * 0.5f);
+    model = glm::translate(model, glm::vec3(offsetX, 0.0f, 0.0f));
     model = glm::scale(model, transform.scale);
-    
     return model;
 }
 
 void Flipper::draw(unsigned int shaderProgram) const {
     glm::mat4 model = getModelMatrix();
-    
-    // Set uniforms directly using OpenGL
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
     glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &color[0]);
-    
     mesh.draw();
 }
 
 void Flipper::reset() {
-    angle = 0.0f;
+    if (isLeft) {
+        pivot = glm::vec3(-1.85f, -4.55f, 1.08f);
+    } else {
+        pivot = glm::vec3(1.85f, -4.55f, 1.08f);
+    }
+    angle = restAngle;
+    angularVelocity = 0.0f;
+    powered = false;
+    transform.position = pivot;
 }

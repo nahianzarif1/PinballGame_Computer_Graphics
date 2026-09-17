@@ -3,53 +3,54 @@
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
+#include <algorithm>
 
-Plunger::Plunger(const glm::vec3& position) {
+Plunger::Plunger(const glm::vec3& /*position*/) {
     name = "Plunger";
-    mesh = createCylinder(0.15f, 1.0f, 16);
-    transform.position = position;
-    color = glm::vec3(0.8f, 0.6f, 0.4f); // Bronze
-    
-    minPosition = -6.0f;
-    maxPosition = -4.0f;
-    speed = 3.0f;
+    mesh = createCylinder(0.09f, 1.15f, 18);
+    color = glm::vec3(0.78f, 0.52f, 0.28f);
+
+    minPosition = -5.85f;
+    maxPosition = -4.35f;
+    speed = 4.5f;
     springCompression = 0.0f;
-    
-    transform.position = glm::vec3(0.0f, minPosition, 1.1f);
+
+    transform.position = glm::vec3(2.95f, minPosition, 1.15f);
+    transform.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 }
 
 void Plunger::update(float dt) {
-    // Spring compression decay
-    if (springCompression > 0.0f) {
-        springCompression -= dt * 2.0f;
-        if (springCompression < 0.0f) springCompression = 0.0f;
+    if (pulling) {
+        springCompression = std::min(1.0f, springCompression + dt * 1.6f);
+        transform.position.y = minPosition - springCompression * 0.55f;
+    } else if (springCompression > 0.0f) {
+        springCompression = std::max(0.0f, springCompression - dt * 8.0f);
+        transform.position.y = minPosition - springCompression * 0.55f;
+    } else {
+        transform.position.y = minPosition;
     }
 }
 
-void Plunger::extend() {
-    if (transform.position.y < maxPosition) {
-        transform.position.y += speed * 0.016f;
-    }
+void Plunger::setPulling(bool on) {
+    pulling = on;
 }
 
-void Plunger::retract() {
-    if (transform.position.y > minPosition) {
-        transform.position.y -= speed * 0.016f;
-        springCompression = 1.0f;
-    }
+float Plunger::releaseLaunchSpeed() {
+    float power = springCompression;
+    pulling = false;
+    return 6.0f + power * 16.0f;
 }
 
 void Plunger::reset() {
-    transform.position = glm::vec3(0.0f, minPosition, 1.1f);
+    transform.position = glm::vec3(2.95f, minPosition, 1.15f);
+    transform.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
     springCompression = 0.0f;
+    pulling = false;
 }
 
 void Plunger::draw(unsigned int shaderProgram) const {
     glm::mat4 model = transform.getModelMatrix();
-    
-    // Set uniforms directly using OpenGL
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
     glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &color[0]);
-    
     mesh.draw();
 }
