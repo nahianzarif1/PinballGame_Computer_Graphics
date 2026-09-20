@@ -7,15 +7,15 @@ C_DEFINES =
 
 C_INCLUDES = -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include
 
-C_FLAGSarm64 =  -arch arm64
+C_FLAGSarm64 = -g -arch arm64
 
-C_FLAGS =  -arch arm64
+C_FLAGS = -g -arch arm64
 
 CXX_DEFINES = 
 
 CXX_INCLUDES = -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include
 
-CXX_FLAGSarm64 = -std=gnu++17 -arch arm64
+CXX_FLAGSarm64 = -g -std=gnu++17 -arch arm64
 
-CXX_FLAGS = -std=gnu++17 -arch arm64
+CXX_FLAGS = -g -std=gnu++17 -arch arm64
 

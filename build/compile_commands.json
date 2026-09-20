@@ -1,0 +1,80 @@
+[
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/Ball.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Ball.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Ball.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/Ball.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/Bumper.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Bumper.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Bumper.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/Bumper.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/Camera.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Camera.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Camera.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/Camera.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/Flipper.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Flipper.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Flipper.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/Flipper.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/GameObject.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/GameObject.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/GameObject.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/GameObject.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/Mesh.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Mesh.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Mesh.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/Mesh.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/PinballMachine.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/PinballMachine.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/PinballMachine.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/PinballMachine.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/Playfield.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Playfield.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Playfield.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/Playfield.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/Plunger.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Plunger.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Plunger.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/Plunger.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/Shader.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Shader.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Shader.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/Shader.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/Transform.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Transform.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Transform.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/Transform.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang++  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -std=gnu++17 -arch arm64 -o CMakeFiles/PinballOpenGL.dir/src/main.cpp.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/main.cpp",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/main.cpp",
+  "output": "CMakeFiles/PinballOpenGL.dir/src/main.cpp.o"
+},
+{
+  "directory": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/build",
+  "command": "/usr/bin/clang  -F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/include -I/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include -isystem /opt/homebrew/include -g -arch arm64 -o CMakeFiles/PinballOpenGL.dir/external/glad/src/glad.c.o -c /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/src/glad.c",
+  "file": "/Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/src/glad.c",
+  "output": "CMakeFiles/PinballOpenGL.dir/external/glad/src/glad.c.o"
+}
+]

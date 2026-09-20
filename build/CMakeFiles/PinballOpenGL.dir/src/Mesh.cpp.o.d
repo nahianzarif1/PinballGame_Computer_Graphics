@@ -1029,8 +1029,4 @@ CMakeFiles/PinballOpenGL.dir/src/Mesh.cpp.o: \
   /opt/homebrew/include/glm/integer.hpp \
   /opt/homebrew/include/glm/detail/func_integer.inl \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/glad/glad.h \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/iostream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/istream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/ostream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/bitset
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h

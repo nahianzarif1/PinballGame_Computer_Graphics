@@ -1114,10 +1114,5 @@ CMakeFiles/PinballOpenGL.dir/src/PinballMachine.cpp.o: \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Light.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Camera.h \
   /opt/homebrew/include/glm/gtc/matrix_transform.hpp \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Shader.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/glad/glad.h \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/iostream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/istream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/ostream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/bitset
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h
