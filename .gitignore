@@ -1,0 +1,23 @@
+# Generated builds and local workspace files
+/build/
+/build_new/
+/build-*/
+/cmake-build-*/
+/output/
+/previews/
+/tmp/
+.DS_Store
+*.bak
+*.swp
+*.swo
+
+# Publish the final presentation; retain earlier drafts locally.
+/Reports_Graphics_Project/*.pptx
+!/Reports_Graphics_Project/Interactive3D_Pinball_Game_Presentation_Updated_Textures.pptx
+
+# Local editor settings and credentials
+.vscode/
+.idea/
+.env
+.env.*
+!.env.example
