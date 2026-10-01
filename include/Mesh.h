@@ -34,5 +34,7 @@ Mesh createCylinder(float radius, float height, int segments);
 Mesh createSphere(float radius, int latitudeSegments, int longitudeSegments);
 Mesh createSpring(float radius, float height, int turns, int segments);
 Mesh createFlipper(float length, float width, float height);
+Mesh createTorus(float majorRadius, float minorRadius, int majorSegments, int minorSegments);
+Mesh createCone(float radius, float height, int segments);
 
 #endif // MESH_H

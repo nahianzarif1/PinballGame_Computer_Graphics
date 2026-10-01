@@ -452,7 +452,105 @@ Mesh createFlipper(float length, float width, float height) {
             }
         }
     }
-    
+
+    mesh.setupMesh();
+    return mesh;
+}
+
+Mesh createTorus(float majorRadius, float minorRadius, int majorSegments, int minorSegments) {
+    Mesh mesh;
+    glm::vec3 color(1.0f, 1.0f, 1.0f);
+
+    for (int i = 0; i < majorSegments; i++) {
+        float u0 = 2.0f * PI * i / majorSegments;
+        float u1 = 2.0f * PI * (i + 1) / majorSegments;
+
+        for (int j = 0; j < minorSegments; j++) {
+            float v0 = 2.0f * PI * j / minorSegments;
+            float v1 = 2.0f * PI * (j + 1) / minorSegments;
+
+            // Calculate positions
+            glm::vec3 p0, p1, p2, p3;
+            glm::vec3 n0, n1, n2, n3;
+
+            p0.x = (majorRadius + minorRadius * cos(v0)) * cos(u0);
+            p0.y = (majorRadius + minorRadius * cos(v0)) * sin(u0);
+            p0.z = minorRadius * sin(v0);
+
+            p1.x = (majorRadius + minorRadius * cos(v1)) * cos(u0);
+            p1.y = (majorRadius + minorRadius * cos(v1)) * sin(u0);
+            p1.z = minorRadius * sin(v1);
+
+            p2.x = (majorRadius + minorRadius * cos(v1)) * cos(u1);
+            p2.y = (majorRadius + minorRadius * cos(v1)) * sin(u1);
+            p2.z = minorRadius * sin(v1);
+
+            p3.x = (majorRadius + minorRadius * cos(v0)) * cos(u1);
+            p3.y = (majorRadius + minorRadius * cos(v0)) * sin(u1);
+            p3.z = minorRadius * sin(v0);
+
+            // Calculate normals (pointing outward from torus center)
+            n0 = normalize(glm::vec3(cos(v0) * cos(u0), cos(v0) * sin(u0), sin(v0)));
+            n1 = normalize(glm::vec3(cos(v1) * cos(u0), cos(v1) * sin(u0), sin(v1)));
+            n2 = normalize(glm::vec3(cos(v1) * cos(u1), cos(v1) * sin(u1), sin(v1)));
+            n3 = normalize(glm::vec3(cos(v0) * cos(u1), cos(v0) * sin(u1), sin(v0)));
+
+            // First triangle
+            mesh.vertices.push_back({p0, n0, color});
+            mesh.vertices.push_back({p1, n1, color});
+            mesh.vertices.push_back({p2, n2, color});
+
+            // Second triangle
+            mesh.vertices.push_back({p0, n0, color});
+            mesh.vertices.push_back({p2, n2, color});
+            mesh.vertices.push_back({p3, n3, color});
+        }
+    }
+
+    mesh.setupMesh();
+    return mesh;
+}
+
+Mesh createCone(float radius, float height, int segments) {
+    Mesh mesh;
+    glm::vec3 color(1.0f, 1.0f, 1.0f);
+
+    // Base vertices
+    glm::vec3 baseCenter(0.0f, 0.0f, 0.0f);
+    glm::vec3 apex(0.0f, height, 0.0f);
+
+    // Side surface
+    for (int i = 0; i < segments; i++) {
+        float theta0 = 2.0f * PI * i / segments;
+        float theta1 = 2.0f * PI * (i + 1) / segments;
+
+        glm::vec3 p0(radius * cos(theta0), 0.0f, radius * sin(theta0));
+        glm::vec3 p1(radius * cos(theta1), 0.0f, radius * sin(theta1));
+
+        // Calculate normals for side surface
+        glm::vec3 edge0 = p0 - apex;
+        glm::vec3 edge1 = p1 - apex;
+        glm::vec3 normal = normalize(cross(edge0, edge1));
+
+        mesh.vertices.push_back({apex, normal, color});
+        mesh.vertices.push_back({p0, normal, color});
+        mesh.vertices.push_back({p1, normal, color});
+    }
+
+    // Base cap
+    glm::vec3 baseNormal(0.0f, -1.0f, 0.0f);
+    for (int i = 0; i < segments; i++) {
+        float theta0 = 2.0f * PI * i / segments;
+        float theta1 = 2.0f * PI * (i + 1) / segments;
+
+        glm::vec3 p0(radius * cos(theta0), 0.0f, radius * sin(theta0));
+        glm::vec3 p1(radius * cos(theta1), 0.0f, radius * sin(theta1));
+
+        mesh.vertices.push_back({baseCenter, baseNormal, color});
+        mesh.vertices.push_back({p1, baseNormal, color});
+        mesh.vertices.push_back({p0, baseNormal, color});
+    }
+
     mesh.setupMesh();
     return mesh;
 }
