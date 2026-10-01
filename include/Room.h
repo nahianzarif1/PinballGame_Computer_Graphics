@@ -7,6 +7,9 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+// Forward declaration to avoid circular dependency
+class PinballMachine;
+
 // Switch for controlling lights and fan
 class Switch {
 public:
@@ -34,6 +37,7 @@ public:
     float currentRotation;
     bool isOn;
 
+    CeilingFan();
     CeilingFan(const glm::vec3& pos);
     void toggle();
     void update(float dt);
@@ -51,6 +55,7 @@ public:
     float ballAnimation;
     bool ballBouncing;
 
+    BasketballHoop();
     BasketballHoop(const glm::vec3& pos);
     void update(float dt);
     void render(unsigned int shaderProgram);
@@ -65,6 +70,7 @@ public:
     glm::vec2 dimensions;
     bool isTransparent;
 
+    GlassWindow();
     GlassWindow(const glm::vec3& pos, const glm::vec2& dims);
     void render(unsigned int shaderProgram);
 };
@@ -82,23 +88,6 @@ public:
 
     Furniture(const glm::vec3& pos, const glm::vec3& col);
     void render(unsigned int shaderProgram);
-};
-
-// Spotlight for room lighting
-struct SpotLight {
-    glm::vec3 position;
-    glm::vec3 direction;
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-    float cutOff;
-    float outerCutOff;
-    float constant;
-    float linear;
-    float quadratic;
-    bool enabled;
-
-    SpotLight();
 };
 
 // Main Room class - the game hub environment

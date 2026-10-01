@@ -41,6 +41,25 @@ void Switch::render(unsigned int shaderProgram) {
 }
 
 // Ceiling Fan implementation
+CeilingFan::CeilingFan()
+    : position(0.0f), rotationSpeed(5.0f), currentRotation(0.0f), isOn(false) {
+    // Initialize with default values
+    fanMotor.transform.position = position;
+    fanMotor.transform.scale = glm::vec3(0.3f, 0.2f, 0.3f);
+    fanMotor.mesh = createCylinder(0.3f, 0.2f, 16);
+    fanMotor.mesh.setupMesh();
+    fanMotor.color = glm::vec3(0.4f, 0.4f, 0.4f);
+
+    for (int i = 0; i < 3; i++) {
+        fanBlades[i].transform.position = position;
+        fanBlades[i].transform.scale = glm::vec3(1.5f, 0.05f, 0.3f);
+        fanBlades[i].transform.rotation = glm::vec3(0.0f, (float)i * (2.0f * PI / 3.0f), 0.0f);
+        fanBlades[i].mesh = createCube(1.5f, 0.05f, 0.3f);
+        fanBlades[i].mesh.setupMesh();
+        fanBlades[i].color = glm::vec3(0.6f, 0.5f, 0.3f);
+    }
+}
+
 CeilingFan::CeilingFan(const glm::vec3& pos)
     : position(pos), rotationSpeed(5.0f), currentRotation(0.0f), isOn(false) {
     // Fan base (motor housing)
@@ -84,6 +103,34 @@ void CeilingFan::render(unsigned int shaderProgram) {
 }
 
 // Basketball Hoop implementation
+BasketballHoop::BasketballHoop()
+    : position(0.0f), ballAnimation(0.0f), ballBouncing(false) {
+    // Initialize with default values
+    backboard.transform.position = position;
+    backboard.transform.scale = glm::vec3(1.2f, 0.8f, 0.05f);
+    backboard.mesh = createCube(1.2f, 0.8f, 0.05f);
+    backboard.mesh.setupMesh();
+    backboard.color = glm::vec3(0.9f, 0.9f, 0.9f);
+
+    rim.transform.position = position + glm::vec3(0.0f, -0.3f, 0.1f);
+    rim.transform.scale = glm::vec3(0.45f, 0.05f, 0.45f);
+    rim.mesh = createTorus(0.45f, 0.05f, 16, 32);
+    rim.mesh.setupMesh();
+    rim.color = glm::vec3(1.0f, 0.3f, 0.0f);
+
+    net.transform.position = position + glm::vec3(0.0f, -0.5f, 0.1f);
+    net.transform.scale = glm::vec3(0.4f, 0.4f, 0.4f);
+    net.mesh = createCone(0.4f, 0.4f, 16);
+    net.mesh.setupMesh();
+    net.color = glm::vec3(0.9f, 0.9f, 0.9f);
+
+    ball.transform.position = position + glm::vec3(0.0f, -0.7f, 0.15f);
+    ball.transform.scale = glm::vec3(0.25f, 0.25f, 0.25f);
+    ball.mesh = createSphere(0.25f, 16, 16);
+    ball.mesh.setupMesh();
+    ball.color = glm::vec3(0.8f, 0.4f, 0.1f);
+}
+
 BasketballHoop::BasketballHoop(const glm::vec3& pos)
     : position(pos), ballAnimation(0.0f), ballBouncing(false) {
     // Backboard
@@ -136,6 +183,10 @@ void BasketballHoop::render(unsigned int shaderProgram) {
 }
 
 // Glass Window implementation
+GlassWindow::GlassWindow()
+    : position(0.0f), dimensions(1.0f, 1.0f), isTransparent(true) {
+}
+
 GlassWindow::GlassWindow(const glm::vec3& pos, const glm::vec2& dims)
     : position(pos), dimensions(dims), isTransparent(true) {
     // Window frame
@@ -223,21 +274,6 @@ void Furniture::render(unsigned int shaderProgram) {
     for (int i = 0; i < 4; i++) {
         legs[i].render(shaderProgram);
     }
-}
-
-// SpotLight implementation
-SpotLight::SpotLight()
-    : position(0.0f, 8.0f, 0.0f),
-      direction(0.0f, -1.0f, 0.0f),
-      ambient(0.1f, 0.1f, 0.1f),
-      diffuse(1.0f, 1.0f, 1.0f),
-      specular(1.0f, 1.0f, 1.0f),
-      cutOff(glm::cos(glm::radians(12.5f))),
-      outerCutOff(glm::cos(glm::radians(17.5f))),
-      constant(1.0f),
-      linear(0.09f),
-      quadratic(0.032f),
-      enabled(true) {
 }
 
 // Room implementation

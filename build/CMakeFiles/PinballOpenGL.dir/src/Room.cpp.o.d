@@ -1,7 +1,6 @@
-CMakeFiles/PinballOpenGL.dir/src/PinballMachine.cpp.o: \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/PinballMachine.cpp \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/PinballMachine.h \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Playfield.h \
+CMakeFiles/PinballOpenGL.dir/src/Room.cpp.o: \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/src/Room.cpp \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Room.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/GameObject.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Transform.h \
   /opt/homebrew/include/glm/glm.hpp \
@@ -1107,13 +1106,8 @@ CMakeFiles/PinballOpenGL.dir/src/PinballMachine.cpp.o: \
   /opt/homebrew/include/glm/gtc/../vector_relational.hpp \
   /opt/homebrew/include/glm/gtc/../common.hpp \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Mesh.h \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Ball.h \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Bumper.h \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Flipper.h \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Plunger.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Light.h \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Camera.h \
-  /opt/homebrew/include/glm/gtc/matrix_transform.hpp \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Room.h \
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/include/Shader.h \
   /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/glad/glad.h \
-  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h
+  /Users/nahianzarif/Desktop/NLP/PinballOpenGL/external/glad/include/KHR/khrplatform.h \
+  /opt/homebrew/include/glm/gtc/matrix_transform.hpp
