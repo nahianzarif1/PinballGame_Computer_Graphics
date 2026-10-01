@@ -6,9 +6,9 @@
 #include "Bumper.h"
 #include "Flipper.h"
 #include "Plunger.h"
+#include "Target.h"
 #include "Light.h"
 #include "Camera.h"
-#include "Room.h"
 #include <vector>
 
 enum class ShadingMode {
@@ -27,6 +27,7 @@ public:
     Playfield playfield;
     Ball ball;
     std::vector<Bumper> bumpers;
+    std::vector<Target> targets;
     Flipper leftFlipper;
     Flipper rightFlipper;
     Plunger plunger;
@@ -34,6 +35,7 @@ public:
     Camera camera;
 
     GameObject base;
+    GameObject cabinet;
     GameObject leftWall;
     GameObject rightWall;
     GameObject backWall;
@@ -42,20 +44,36 @@ public:
     GameObject laneWall;
     GameObject leftRail;
     GameObject rightRail;
-
-    // Game hub room environment
-    Room room;
+    GameObject legFL;
+    GameObject legFR;
+    GameObject legBL;
+    GameObject legBR;
+    GameObject backbox;
+    GameObject backglass;
+    GameObject glassCover;
+    GameObject slingLeft;
+    GameObject slingRight;
+    GameObject laneDeflector;
+    GameObject apronLeft;
+    GameObject apronRight;
+    GameObject centerPost;
 
     int selectedObjectIndex{0};
     int selectedLightIndex{0};
     SelectionMode selectionMode{SelectionMode::OBJECT};
     ShadingMode shadingMode{ShadingMode::PHONG};
 
+    int score{0};
+    int lives{3};
+    int ballNumber{1};
+    bool gameOver{false};
+    float flipperScoreCooldown{0.0f};
+
     PinballMachine();
 
     void initialize();
     void update(float dt);
-    void render(unsigned int shaderProgram);
+    void render(unsigned int shaderProgram, bool withLighting = true);
     void checkCollisions();
 
     void selectNextObject();
@@ -75,22 +93,21 @@ public:
     void setRightFlipperPowered(bool on);
     void setPlungerPulling(bool on);
 
-    // Room control methods
-    void toggleRoomSwitch(int index);
-    void toggleRoomFan();
-    void toggleRoomLights();
-    void setRoomAmbient(float intensity);
-    void setRoomDiffuse(float intensity);
-    void setRoomSpecular(float intensity);
+    void addScore(int points);
+    void resetGame();
+    void launchFromLane(float speed);
+    void drainBall();
 
     float tableHalfWidth() const { return playfield.width * 0.5f; }
     float tableHalfLength() const { return playfield.length * 0.5f; }
 
+    void applyLighting(unsigned int shaderProgram) const;
+
 private:
     void createMachineStructure();
     void placeOnPlayfield(GameObject& obj, float heightOffset);
+    void seatBall();
     void clampObjectToTable(glm::vec3& position, float radius) const;
-    void applyLighting(unsigned int shaderProgram) const;
     void collideBallWithFlipper(Flipper& flipper);
     void collideBallWithSegment(const glm::vec2& a, const glm::vec2& b, float radius, float bounce);
 };

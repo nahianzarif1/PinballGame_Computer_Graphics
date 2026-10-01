@@ -12,14 +12,15 @@ public:
     float hitTimer;
     glm::vec3 restColor;
     float impulse{8.5f};
+    int points{50};
 
     Bumper(float radius = 0.4f, const glm::vec3& position = glm::vec3(0.0f));
 
     void update(float dt) override;
     void draw(unsigned int shaderProgram) const override;
-    void checkCollision(class Ball& ball);
+    bool checkCollision(class Ball& ball);
     void onHit();
     bool isHit() const { return hitTimer > 0.0f; }
 };
 
-#endif // BUMPER_H
+#endif

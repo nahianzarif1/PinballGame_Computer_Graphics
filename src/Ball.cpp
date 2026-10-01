@@ -42,11 +42,17 @@ void Ball::reset() {
 
 void Ball::sitOnPlayfield(float surfaceZ) {
     transform.position.z = surfaceZ + radius;
+    float speed = glm::length(glm::vec2(velocity.x, velocity.y));
+    if (speed > 0.05f) {
+        transform.rotation.z += speed * 8.0f;
+    }
 }
 
 void Ball::draw(unsigned int shaderProgram) const {
     glm::mat4 model = transform.getModelMatrix();
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
     glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &color[0]);
+    glUniform1f(glGetUniformLocation(shaderProgram, "objectAlpha"), 1.0f);
+    glUniform1i(glGetUniformLocation(shaderProgram, "useTexture"), 0);
     mesh.draw();
 }

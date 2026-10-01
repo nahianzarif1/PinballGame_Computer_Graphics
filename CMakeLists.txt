@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(PinballOpenGL)
+project(GameHubPinball)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -25,9 +25,6 @@ include_directories(
 # Source files
 file(GLOB SOURCES "src/*.cpp")
 file(GLOB HEADERS "include/*.h")
-
-# Explicitly add Room.cpp to ensure it's included
-list(APPEND SOURCES "${CMAKE_SOURCE_DIR}/src/Room.cpp")
 
 # Glad source
 set(GLAD_SOURCES ${CMAKE_SOURCE_DIR}/external/glad/src/glad.c)

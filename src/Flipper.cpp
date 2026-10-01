@@ -12,7 +12,7 @@ Flipper::Flipper(bool isLeft, const glm::vec3& /*pivotParam*/)
     length = 1.55f;
     width = 0.22f;
     height = 0.16f;
-    mesh = createCube(length, width, height);
+    mesh = createFlipper(length, width, height);
 
     if (isLeft) {
         restAngle = -28.0f;
@@ -93,6 +93,8 @@ void Flipper::draw(unsigned int shaderProgram) const {
     glm::mat4 model = getModelMatrix();
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
     glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &color[0]);
+    glUniform1f(glGetUniformLocation(shaderProgram, "objectAlpha"), 1.0f);
+    glUniform1i(glGetUniformLocation(shaderProgram, "useTexture"), 0);
     mesh.draw();
 }
 

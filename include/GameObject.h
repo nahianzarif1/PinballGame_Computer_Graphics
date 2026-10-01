@@ -11,6 +11,7 @@ public:
     Mesh mesh;
     std::string name;
     glm::vec3 color;
+    float alpha{1.0f};
 
     GameObject(const std::string& name = "GameObject");
     virtual ~GameObject() = default;
@@ -21,7 +22,6 @@ public:
 
     virtual void update(float dt);
     virtual void draw(unsigned int shaderProgram) const;
-    virtual void render(unsigned int shaderProgram) const;
     void setColor(const glm::vec3& newColor);
 };
 

@@ -2,10 +2,13 @@
 #include <glad/glad.h>
 #include <cmath>
 #include <utility>
+#include <vector>
+#include <string>
+#include <algorithm>
 
 const float PI = 3.14159265358979323846f;
 
-Mesh::Mesh() : VAO(0), VBO(0), EBO(0) {}
+Mesh::Mesh() : VAO(0), VBO(0), EBO(0), textureID(0), hasTexture(false) {}
 
 Mesh::~Mesh() {
     clear();
@@ -13,10 +16,13 @@ Mesh::~Mesh() {
 
 Mesh::Mesh(Mesh&& other) noexcept
     : VAO(other.VAO), VBO(other.VBO), EBO(other.EBO),
+      textureID(other.textureID), hasTexture(other.hasTexture),
       vertices(std::move(other.vertices)), indices(std::move(other.indices)) {
     other.VAO = 0;
     other.VBO = 0;
     other.EBO = 0;
+    other.textureID = 0;
+    other.hasTexture = false;
 }
 
 Mesh& Mesh::operator=(Mesh&& other) noexcept {
@@ -25,11 +31,15 @@ Mesh& Mesh::operator=(Mesh&& other) noexcept {
         VAO = other.VAO;
         VBO = other.VBO;
         EBO = other.EBO;
+        textureID = other.textureID;
+        hasTexture = other.hasTexture;
         vertices = std::move(other.vertices);
         indices = std::move(other.indices);
         other.VAO = 0;
         other.VBO = 0;
         other.EBO = 0;
+        other.textureID = 0;
+        other.hasTexture = false;
     }
     return *this;
 }
@@ -62,6 +72,9 @@ void Mesh::setupMesh() {
     // Color
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
+
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
     
     glBindVertexArray(0);
 }
@@ -83,11 +96,103 @@ void Mesh::clear() {
     if (VAO) glDeleteVertexArrays(1, &VAO);
     if (VBO) glDeleteBuffers(1, &VBO);
     if (EBO) glDeleteBuffers(1, &EBO);
+    if (textureID) glDeleteTextures(1, &textureID);
     VAO = 0;
     VBO = 0;
     EBO = 0;
+    textureID = 0;
+    hasTexture = false;
     vertices.clear();
     indices.clear();
+}
+
+void Mesh::loadTexture(const std::string& name) {
+    const int w = 128;
+    const int h = 128;
+    std::vector<unsigned char> pixels(static_cast<size_t>(w * h * 3));
+
+    auto put = [&](int x, int y, unsigned char r, unsigned char g, unsigned char b) {
+        x = std::clamp(x, 0, w - 1);
+        y = std::clamp(y, 0, h - 1);
+        const int i = (y * w + x) * 3;
+        pixels[i] = r;
+        pixels[i + 1] = g;
+        pixels[i + 2] = b;
+    };
+
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            float u = x / float(w);
+            float v = y / float(h);
+            unsigned char r = 180, g = 180, b = 180;
+
+            if (name == "checker") {
+                int c = ((x / 16) + (y / 16)) % 2;
+                r = c ? 48 : 210;
+                g = c ? 42 : 205;
+                b = c ? 58 : 190;
+            } else if (name == "wood") {
+                float rings = std::sin((u * 8.0f + std::sin(v * 12.0f) * 0.2f) * 3.14159f);
+                r = static_cast<unsigned char>(110 + 50 * rings);
+                g = static_cast<unsigned char>(70 + 30 * rings);
+                b = static_cast<unsigned char>(38 + 18 * rings);
+            } else if (name == "stars") {
+                r = 18; g = 12; b = 48;
+                int n = (x * 73 + y * 149) % 97;
+                if (n < 3) { r = 255; g = 255; b = 220; }
+                if ((x + y) % 37 == 0) { r = 90; g = 70; b = 180; }
+            } else if (name == "brick") {
+                int row = y / 16;
+                int col = (x + (row % 2) * 16) / 32;
+                bool mortar = (y % 16 < 2) || ((x + (row % 2) * 16) % 32 < 2);
+                if (mortar) { r = 190; g = 180; b = 170; }
+                else { r = 150 + (col * 13) % 40; g = 70; b = 55; }
+            } else if (name == "fabric") {
+                r = static_cast<unsigned char>(80 + 40 * std::sin(u * 40));
+                g = static_cast<unsigned char>(50 + 25 * std::sin(v * 36));
+                b = 90;
+            } else if (name == "carpet") {
+                r = static_cast<unsigned char>(90 + 20 * ((x / 8 + y / 8) % 2));
+                g = 28;
+                b = 42;
+            } else if (name == "basketball") {
+                r = 220; g = 110; b = 30;
+                if (std::abs(x - 64) < 4 || std::abs(y - 64) < 4) { r = 20; g = 20; b = 20; }
+                float dx = (x - 64) / 64.0f;
+                float dy = (y - 64) / 64.0f;
+                if (std::abs(dx * dx + dy * 0.35f) < 0.04f) { r = 20; g = 20; b = 20; }
+            } else if (name == "metal") {
+                r = g = b = static_cast<unsigned char>(140 + 40 * std::sin(u * 50));
+            } else if (name == "concrete") {
+                int n = (x * 13 + y * 29) % 23;
+                r = g = b = static_cast<unsigned char>(120 + n);
+            } else if (name == "neon") {
+                float glow = 0.5f + 0.5f * std::sin(u * 18.0f + v * 6.0f);
+                r = static_cast<unsigned char>(80 + 140 * glow);
+                g = static_cast<unsigned char>(40 + 60 * glow);
+                b = static_cast<unsigned char>(180 + 70 * glow);
+                if ((y / 10) % 2 == 0) { r = 40; g = 20; b = 90; }
+            } else {
+                r = 40; g = 80; b = 160;
+            }
+            put(x, y, r, g, b);
+        }
+    }
+
+    if (textureID) {
+        glDeleteTextures(1, &textureID);
+        textureID = 0;
+    }
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    hasTexture = true;
 }
 
 // Exact mathematical geometry functions
@@ -131,23 +236,24 @@ Mesh createCube(float width, float height, float depth) {
     };
     
     glm::vec3 baseColor(1.0f, 1.0f, 1.0f);
+    glm::vec2 faceUV[4] = {
+        glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f),
+        glm::vec2(1.0f, 1.0f), glm::vec2(0.0f, 1.0f)
+    };
     
     for (int face = 0; face < 6; face++) {
-        // Two triangles per face
         int i0 = faceIndices[face][0];
         int i1 = faceIndices[face][1];
         int i2 = faceIndices[face][2];
         int i3 = faceIndices[face][3];
         
-        // Triangle 1
-        mesh.vertices.push_back({positions[i0], normals[face], baseColor});
-        mesh.vertices.push_back({positions[i1], normals[face], baseColor});
-        mesh.vertices.push_back({positions[i2], normals[face], baseColor});
+        mesh.vertices.push_back({positions[i0], normals[face], baseColor, faceUV[0]});
+        mesh.vertices.push_back({positions[i1], normals[face], baseColor, faceUV[1]});
+        mesh.vertices.push_back({positions[i2], normals[face], baseColor, faceUV[2]});
         
-        // Triangle 2
-        mesh.vertices.push_back({positions[i0], normals[face], baseColor});
-        mesh.vertices.push_back({positions[i2], normals[face], baseColor});
-        mesh.vertices.push_back({positions[i3], normals[face], baseColor});
+        mesh.vertices.push_back({positions[i0], normals[face], baseColor, faceUV[0]});
+        mesh.vertices.push_back({positions[i2], normals[face], baseColor, faceUV[2]});
+        mesh.vertices.push_back({positions[i3], normals[face], baseColor, faceUV[3]});
     }
     
     mesh.setupMesh();
@@ -170,15 +276,13 @@ Mesh createPlane(float width, float depth) {
     glm::vec3 normal(0.0f, 0.0f, 1.0f);
     glm::vec3 color(1.0f, 1.0f, 1.0f);
     
-    // Triangle 1
-    mesh.vertices.push_back({positions[0], normal, color});
-    mesh.vertices.push_back({positions[1], normal, color});
-    mesh.vertices.push_back({positions[2], normal, color});
+    mesh.vertices.push_back({positions[0], normal, color, glm::vec2(0.0f, 0.0f)});
+    mesh.vertices.push_back({positions[1], normal, color, glm::vec2(4.0f, 0.0f)});
+    mesh.vertices.push_back({positions[2], normal, color, glm::vec2(4.0f, 4.0f)});
     
-    // Triangle 2
-    mesh.vertices.push_back({positions[0], normal, color});
-    mesh.vertices.push_back({positions[2], normal, color});
-    mesh.vertices.push_back({positions[3], normal, color});
+    mesh.vertices.push_back({positions[0], normal, color, glm::vec2(0.0f, 0.0f)});
+    mesh.vertices.push_back({positions[2], normal, color, glm::vec2(4.0f, 4.0f)});
+    mesh.vertices.push_back({positions[3], normal, color, glm::vec2(0.0f, 4.0f)});
     
     mesh.setupMesh();
     return mesh;
@@ -206,14 +310,15 @@ Mesh createCylinder(float radius, float height, int segments) {
         
         // Two triangles per segment
         // Triangle 1
-        mesh.vertices.push_back({glm::vec3(x0, y0, -halfHeight), normal0, color});
-        mesh.vertices.push_back({glm::vec3(x1, y1, -halfHeight), normal1, color});
-        mesh.vertices.push_back({glm::vec3(x1, y1,  halfHeight), normal1, color});
+        float u0 = (float)i / segments;
+        float u1 = (float)(i + 1) / segments;
+        mesh.vertices.push_back({glm::vec3(x0, y0, -halfHeight), normal0, color, glm::vec2(u0, 0.0f)});
+        mesh.vertices.push_back({glm::vec3(x1, y1, -halfHeight), normal1, color, glm::vec2(u1, 0.0f)});
+        mesh.vertices.push_back({glm::vec3(x1, y1,  halfHeight), normal1, color, glm::vec2(u1, 1.0f)});
         
-        // Triangle 2
-        mesh.vertices.push_back({glm::vec3(x0, y0, -halfHeight), normal0, color});
-        mesh.vertices.push_back({glm::vec3(x1, y1,  halfHeight), normal1, color});
-        mesh.vertices.push_back({glm::vec3(x0, y0,  halfHeight), normal0, color});
+        mesh.vertices.push_back({glm::vec3(x0, y0, -halfHeight), normal0, color, glm::vec2(u0, 0.0f)});
+        mesh.vertices.push_back({glm::vec3(x1, y1,  halfHeight), normal1, color, glm::vec2(u1, 1.0f)});
+        mesh.vertices.push_back({glm::vec3(x0, y0,  halfHeight), normal0, color, glm::vec2(u0, 1.0f)});
     }
     
     // Top cap
@@ -273,8 +378,8 @@ Mesh createSphere(float radius, int latitudeSegments, int longitudeSegments) {
             
             glm::vec3 position(x, y, z);
             glm::vec3 normal = normalize(position);
-            
-            mesh.vertices.push_back({position, normal, color});
+            glm::vec2 uv((float)j / longitudeSegments, (float)i / latitudeSegments);
+            mesh.vertices.push_back({position, normal, color, uv});
         }
     }
     
@@ -452,105 +557,7 @@ Mesh createFlipper(float length, float width, float height) {
             }
         }
     }
-
-    mesh.setupMesh();
-    return mesh;
-}
-
-Mesh createTorus(float majorRadius, float minorRadius, int majorSegments, int minorSegments) {
-    Mesh mesh;
-    glm::vec3 color(1.0f, 1.0f, 1.0f);
-
-    for (int i = 0; i < majorSegments; i++) {
-        float u0 = 2.0f * PI * i / majorSegments;
-        float u1 = 2.0f * PI * (i + 1) / majorSegments;
-
-        for (int j = 0; j < minorSegments; j++) {
-            float v0 = 2.0f * PI * j / minorSegments;
-            float v1 = 2.0f * PI * (j + 1) / minorSegments;
-
-            // Calculate positions
-            glm::vec3 p0, p1, p2, p3;
-            glm::vec3 n0, n1, n2, n3;
-
-            p0.x = (majorRadius + minorRadius * cos(v0)) * cos(u0);
-            p0.y = (majorRadius + minorRadius * cos(v0)) * sin(u0);
-            p0.z = minorRadius * sin(v0);
-
-            p1.x = (majorRadius + minorRadius * cos(v1)) * cos(u0);
-            p1.y = (majorRadius + minorRadius * cos(v1)) * sin(u0);
-            p1.z = minorRadius * sin(v1);
-
-            p2.x = (majorRadius + minorRadius * cos(v1)) * cos(u1);
-            p2.y = (majorRadius + minorRadius * cos(v1)) * sin(u1);
-            p2.z = minorRadius * sin(v1);
-
-            p3.x = (majorRadius + minorRadius * cos(v0)) * cos(u1);
-            p3.y = (majorRadius + minorRadius * cos(v0)) * sin(u1);
-            p3.z = minorRadius * sin(v0);
-
-            // Calculate normals (pointing outward from torus center)
-            n0 = normalize(glm::vec3(cos(v0) * cos(u0), cos(v0) * sin(u0), sin(v0)));
-            n1 = normalize(glm::vec3(cos(v1) * cos(u0), cos(v1) * sin(u0), sin(v1)));
-            n2 = normalize(glm::vec3(cos(v1) * cos(u1), cos(v1) * sin(u1), sin(v1)));
-            n3 = normalize(glm::vec3(cos(v0) * cos(u1), cos(v0) * sin(u1), sin(v0)));
-
-            // First triangle
-            mesh.vertices.push_back({p0, n0, color});
-            mesh.vertices.push_back({p1, n1, color});
-            mesh.vertices.push_back({p2, n2, color});
-
-            // Second triangle
-            mesh.vertices.push_back({p0, n0, color});
-            mesh.vertices.push_back({p2, n2, color});
-            mesh.vertices.push_back({p3, n3, color});
-        }
-    }
-
-    mesh.setupMesh();
-    return mesh;
-}
-
-Mesh createCone(float radius, float height, int segments) {
-    Mesh mesh;
-    glm::vec3 color(1.0f, 1.0f, 1.0f);
-
-    // Base vertices
-    glm::vec3 baseCenter(0.0f, 0.0f, 0.0f);
-    glm::vec3 apex(0.0f, height, 0.0f);
-
-    // Side surface
-    for (int i = 0; i < segments; i++) {
-        float theta0 = 2.0f * PI * i / segments;
-        float theta1 = 2.0f * PI * (i + 1) / segments;
-
-        glm::vec3 p0(radius * cos(theta0), 0.0f, radius * sin(theta0));
-        glm::vec3 p1(radius * cos(theta1), 0.0f, radius * sin(theta1));
-
-        // Calculate normals for side surface
-        glm::vec3 edge0 = p0 - apex;
-        glm::vec3 edge1 = p1 - apex;
-        glm::vec3 normal = normalize(cross(edge0, edge1));
-
-        mesh.vertices.push_back({apex, normal, color});
-        mesh.vertices.push_back({p0, normal, color});
-        mesh.vertices.push_back({p1, normal, color});
-    }
-
-    // Base cap
-    glm::vec3 baseNormal(0.0f, -1.0f, 0.0f);
-    for (int i = 0; i < segments; i++) {
-        float theta0 = 2.0f * PI * i / segments;
-        float theta1 = 2.0f * PI * (i + 1) / segments;
-
-        glm::vec3 p0(radius * cos(theta0), 0.0f, radius * sin(theta0));
-        glm::vec3 p1(radius * cos(theta1), 0.0f, radius * sin(theta1));
-
-        mesh.vertices.push_back({baseCenter, baseNormal, color});
-        mesh.vertices.push_back({p1, baseNormal, color});
-        mesh.vertices.push_back({p0, baseNormal, color});
-    }
-
+    
     mesh.setupMesh();
     return mesh;
 }
