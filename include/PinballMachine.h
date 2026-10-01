@@ -8,6 +8,7 @@
 #include "Plunger.h"
 #include "Light.h"
 #include "Camera.h"
+#include "Room.h"
 #include <vector>
 
 enum class ShadingMode {
@@ -42,6 +43,9 @@ public:
     GameObject leftRail;
     GameObject rightRail;
 
+    // Game hub room environment
+    Room room;
+
     int selectedObjectIndex{0};
     int selectedLightIndex{0};
     SelectionMode selectionMode{SelectionMode::OBJECT};
@@ -70,6 +74,14 @@ public:
     void setLeftFlipperPowered(bool on);
     void setRightFlipperPowered(bool on);
     void setPlungerPulling(bool on);
+
+    // Room control methods
+    void toggleRoomSwitch(int index);
+    void toggleRoomFan();
+    void toggleRoomLights();
+    void setRoomAmbient(float intensity);
+    void setRoomDiffuse(float intensity);
+    void setRoomSpecular(float intensity);
 
     float tableHalfWidth() const { return playfield.width * 0.5f; }
     float tableHalfLength() const { return playfield.length * 0.5f; }

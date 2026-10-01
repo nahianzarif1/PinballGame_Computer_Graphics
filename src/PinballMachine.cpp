@@ -64,6 +64,13 @@ void PinballMachine::initialize() {
 
     createMachineStructure();
 
+    // Initialize game hub room
+    room = Room(20.0f, 20.0f, 8.0f);
+    room.initialize();
+
+    // Position pinball machine in the room
+    glm::vec3 roomOffset(0.0f, 0.0f, 0.0f);
+
     camera = Camera(glm::vec3(0.0f, -16.5f, 12.5f), glm::vec3(0.0f, 0.0f, 1.0f), 90.0f, -36.0f);
     camera.movementSpeed = 8.0f;
     camera.zoom = 42.0f;
@@ -135,6 +142,9 @@ void PinballMachine::clampObjectToTable(glm::vec3& position, float radius) const
 
 void PinballMachine::update(float dt) {
     dt = std::min(dt, 0.033f);
+
+    // Update room environment
+    room.update(dt);
 
     playfield.update(dt);
     leftFlipper.update(dt);
