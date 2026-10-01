@@ -97,6 +97,7 @@ int main() {
     
     std::cout << "\n========================================" << std::endl;
     std::cout << "   3D INTERACTIVE PINBALL MACHINE" << std::endl;
+    std::cout << "   GAME HUB EDITION" << std::endl;
     std::cout << "========================================\n" << std::endl;
     std::cout << "CONTROLS:" << std::endl;
     std::cout << "----------------------------------------" << std::endl;
@@ -116,6 +117,13 @@ int main() {
     std::cout << "  W/S/A/D/Q/E - Move selected light" << std::endl;
     std::cout << "  +/-    - Adjust light intensity" << std::endl;
     std::cout << "  R      - Reset selected light" << std::endl;
+    std::cout << "\nROOM CONTROLS:" << std::endl;
+    std::cout << "  L      - Toggle room lights" << std::endl;
+    std::cout << "  F      - Toggle ceiling fan" << std::endl;
+    std::cout << "  1/2/3  - Switch light switches" << std::endl;
+    std::cout << "  [ / ]  - Adjust ambient light" << std::endl;
+    std::cout << "  { / }  - Adjust diffuse light" << std::endl;
+    std::cout << "  < / >  - Adjust specular light" << std::endl;
     std::cout << "\nSHADING:" << std::endl;
     std::cout << "  1      - Flat shading" << std::endl;
     std::cout << "  2      - Gouraud shading" << std::endl;
@@ -308,7 +316,7 @@ void processInput(GLFWwindow* window) {
     static bool key1Pressed = false;
     static bool key2Pressed = false;
     static bool key3Pressed = false;
-    
+
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !key1Pressed) {
         machine->setShadingMode(ShadingMode::FLAT);
         key1Pressed = true;
@@ -316,7 +324,7 @@ void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE) {
         key1Pressed = false;
     }
-    
+
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && !key2Pressed) {
         machine->setShadingMode(ShadingMode::GOURAUD);
         key2Pressed = true;
@@ -324,13 +332,65 @@ void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE) {
         key2Pressed = false;
     }
-    
+
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS && !key3Pressed) {
         machine->setShadingMode(ShadingMode::PHONG);
         key3Pressed = true;
     }
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_RELEASE) {
         key3Pressed = false;
+    }
+
+    // Room controls
+    static bool keyLPressed = false;
+    static bool keyFPressed = false;
+
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && !keyLPressed) {
+        machine->toggleRoomLights();
+        keyLPressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_RELEASE) {
+        keyLPressed = false;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && !keyFPressed) {
+        machine->toggleRoomFan();
+        keyFPressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE) {
+        keyFPressed = false;
+    }
+
+    // Light intensity controls
+    static float ambientIntensity = 0.1f;
+    static float diffuseIntensity = 0.8f;
+    static float specularIntensity = 1.0f;
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) {
+        ambientIntensity = std::max(0.0f, ambientIntensity - 0.01f);
+        machine->setRoomAmbient(ambientIntensity);
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) {
+        ambientIntensity = std::min(1.0f, ambientIntensity + 0.01f);
+        machine->setRoomAmbient(ambientIntensity);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+        diffuseIntensity = std::max(0.0f, diffuseIntensity - 0.01f);
+        machine->setRoomDiffuse(diffuseIntensity);
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+        diffuseIntensity = std::min(1.0f, diffuseIntensity + 0.01f);
+        machine->setRoomDiffuse(diffuseIntensity);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS) {
+        specularIntensity = std::max(0.0f, specularIntensity - 0.01f);
+        machine->setRoomSpecular(specularIntensity);
+    }
+    if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS) {
+        specularIntensity = std::min(1.0f, specularIntensity + 0.01f);
+        machine->setRoomSpecular(specularIntensity);
     }
 }
 

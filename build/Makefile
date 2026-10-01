@@ -369,6 +369,30 @@ src/Plunger.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PinballOpenGL.dir/build.make CMakeFiles/PinballOpenGL.dir/src/Plunger.cpp.s
 .PHONY : src/Plunger.cpp.s
 
+src/Room.o: src/Room.cpp.o
+.PHONY : src/Room.o
+
+# target to build an object file
+src/Room.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PinballOpenGL.dir/build.make CMakeFiles/PinballOpenGL.dir/src/Room.cpp.o
+.PHONY : src/Room.cpp.o
+
+src/Room.i: src/Room.cpp.i
+.PHONY : src/Room.i
+
+# target to preprocess a source file
+src/Room.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PinballOpenGL.dir/build.make CMakeFiles/PinballOpenGL.dir/src/Room.cpp.i
+.PHONY : src/Room.cpp.i
+
+src/Room.s: src/Room.cpp.s
+.PHONY : src/Room.s
+
+# target to generate assembly for a file
+src/Room.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/PinballOpenGL.dir/build.make CMakeFiles/PinballOpenGL.dir/src/Room.cpp.s
+.PHONY : src/Room.cpp.s
+
 src/Shader.o: src/Shader.cpp.o
 .PHONY : src/Shader.o
 
@@ -480,6 +504,9 @@ help:
 	@echo "... src/Plunger.o"
 	@echo "... src/Plunger.i"
 	@echo "... src/Plunger.s"
+	@echo "... src/Room.o"
+	@echo "... src/Room.i"
+	@echo "... src/Room.s"
 	@echo "... src/Shader.o"
 	@echo "... src/Shader.i"
 	@echo "... src/Shader.s"

@@ -26,6 +26,9 @@ include_directories(
 file(GLOB SOURCES "src/*.cpp")
 file(GLOB HEADERS "include/*.h")
 
+# Explicitly add Room.cpp to ensure it's included
+list(APPEND SOURCES "${CMAKE_SOURCE_DIR}/src/Room.cpp")
+
 # Glad source
 set(GLAD_SOURCES ${CMAKE_SOURCE_DIR}/external/glad/src/glad.c)
 

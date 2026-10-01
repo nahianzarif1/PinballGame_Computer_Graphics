@@ -21,6 +21,7 @@ public:
 
     virtual void update(float dt);
     virtual void draw(unsigned int shaderProgram) const;
+    virtual void render(unsigned int shaderProgram) const;
     void setColor(const glm::vec3& newColor);
 };
 

@@ -295,10 +295,14 @@ void PinballMachine::checkCollisions() {
 void PinballMachine::applyLighting(unsigned int shaderProgram) const {
     glUniform3fv(glGetUniformLocation(shaderProgram, "viewPos"), 1, &camera.position[0]);
     glUniform1i(glGetUniformLocation(shaderProgram, "numPointLights"), static_cast<int>(lights.size()));
+    glUniform1i(glGetUniformLocation(shaderProgram, "numSpotLights"), static_cast<int>(room.spotLights.size()));
     glUniform1f(glGetUniformLocation(shaderProgram, "shininess"), 48.0f);
-    glm::vec3 ambient(0.22f, 0.22f, 0.24f);
+
+    // Use room ambient light settings
+    glm::vec3 ambient = room.ambientLight;
     glUniform3fv(glGetUniformLocation(shaderProgram, "sceneAmbient"), 1, &ambient[0]);
 
+    // Point lights (pinball machine lights)
     for (int i = 0; i < static_cast<int>(lights.size()); i++) {
         std::string prefix = "pointLights[" + std::to_string(i) + "].";
         const PointLight& light = lights[i];
@@ -312,11 +316,32 @@ void PinballMachine::applyLighting(unsigned int shaderProgram) const {
         glUniform1f(glGetUniformLocation(shaderProgram, (prefix + "kq").c_str()), light.quadratic);
         glUniform1i(glGetUniformLocation(shaderProgram, (prefix + "enabled").c_str()), light.enabled ? 1 : 0);
     }
+
+    // Spot lights (room lighting)
+    for (int i = 0; i < static_cast<int>(room.spotLights.size()); i++) {
+        std::string prefix = "spotLights[" + std::to_string(i) + "].";
+        const SpotLight& light = room.spotLights[i];
+        glUniform3fv(glGetUniformLocation(shaderProgram, (prefix + "position").c_str()), 1, &light.position[0]);
+        glUniform3fv(glGetUniformLocation(shaderProgram, (prefix + "direction").c_str()), 1, &light.direction[0]);
+        glUniform3fv(glGetUniformLocation(shaderProgram, (prefix + "ambient").c_str()), 1, &light.ambient[0]);
+        glUniform3fv(glGetUniformLocation(shaderProgram, (prefix + "diffuse").c_str()), 1, &light.diffuse[0]);
+        glUniform3fv(glGetUniformLocation(shaderProgram, (prefix + "specular").c_str()), 1, &light.specular[0]);
+        glUniform1f(glGetUniformLocation(shaderProgram, (prefix + "cutOff").c_str()), light.cutOff);
+        glUniform1f(glGetUniformLocation(shaderProgram, (prefix + "outerCutOff").c_str()), light.outerCutOff);
+        glUniform1f(glGetUniformLocation(shaderProgram, (prefix + "constant").c_str()), light.constant);
+        glUniform1f(glGetUniformLocation(shaderProgram, (prefix + "linear").c_str()), light.linear);
+        glUniform1f(glGetUniformLocation(shaderProgram, (prefix + "quadratic").c_str()), light.quadratic);
+        glUniform1i(glGetUniformLocation(shaderProgram, (prefix + "enabled").c_str()), light.enabled ? 1 : 0);
+    }
 }
 
 void PinballMachine::render(unsigned int shaderProgram) {
     applyLighting(shaderProgram);
 
+    // Render room environment first (background)
+    room.render(shaderProgram);
+
+    // Render pinball machine
     base.draw(shaderProgram);
     playfield.draw(shaderProgram);
     leftWall.draw(shaderProgram);
@@ -468,4 +493,29 @@ void PinballMachine::setPlungerPulling(bool on) {
         return;
     }
     plunger.setPulling(on);
+}
+
+// Room control methods
+void PinballMachine::toggleRoomSwitch(int index) {
+    room.toggleSwitch(index);
+}
+
+void PinballMachine::toggleRoomFan() {
+    room.toggleFan();
+}
+
+void PinballMachine::toggleRoomLights() {
+    room.toggleMainLights();
+}
+
+void PinballMachine::setRoomAmbient(float intensity) {
+    room.setAmbientIntensity(intensity);
+}
+
+void PinballMachine::setRoomDiffuse(float intensity) {
+    room.setDiffuseIntensity(intensity);
+}
+
+void PinballMachine::setRoomSpecular(float intensity) {
+    room.setSpecularIntensity(intensity);
 }

@@ -19,6 +19,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/PinballOpenGL.dir/src/Playfield.cpp.o.d"
   "CMakeFiles/PinballOpenGL.dir/src/Plunger.cpp.o"
   "CMakeFiles/PinballOpenGL.dir/src/Plunger.cpp.o.d"
+  "CMakeFiles/PinballOpenGL.dir/src/Room.cpp.o"
+  "CMakeFiles/PinballOpenGL.dir/src/Room.cpp.o.d"
   "CMakeFiles/PinballOpenGL.dir/src/Shader.cpp.o"
   "CMakeFiles/PinballOpenGL.dir/src/Shader.cpp.o.d"
   "CMakeFiles/PinballOpenGL.dir/src/Transform.cpp.o"
