@@ -17,6 +17,7 @@ public:
     glm::vec3 localToWorld(const glm::vec3& localPos) const;
     void update(float dt) override;
     void draw(unsigned int shaderProgram) const override;
+    glm::mat4 getModelMatrix() const;
 };
 
 #endif // PLAYFIELD_H

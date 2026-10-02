@@ -5,48 +5,49 @@
 #include <glm/glm.hpp>
 #include <cmath>
 
-const float PI = 3.14159265358979323846f;
-
-Playfield::Playfield(float width, float length, float tiltAngle) 
+Playfield::Playfield(float width, float length, float tiltAngle)
     : width(width), length(length), tiltAngle(tiltAngle) {
     name = "Playfield";
-    mesh = createPlane(width, length);
-    baseHeight = 1.2f;
-    
+    mesh = createPlane(width, length / std::cos(glm::radians(tiltAngle)), 1.0f);
+    baseHeight = 1.4f;
     transform.position = glm::vec3(0.0f, 0.0f, baseHeight);
-    color = glm::vec3(0.1f, 0.4f, 0.2f); // Forest green
+    color = glm::vec3(0.9f, 0.94f, 1.0f);
+    mesh.loadTexture("playfield");
 }
 
 float Playfield::calculateZ(float y) const {
-    // z = z0 + y * sin(theta)
-    return baseHeight + y * sin(glm::radians(tiltAngle));
+    return baseHeight + y * std::tan(glm::radians(tiltAngle));
 }
 
 glm::vec3 Playfield::localToWorld(const glm::vec3& localPos) const {
-    float z = calculateZ(localPos.y);
-    return glm::vec3(localPos.x, localPos.y, z);
+    return glm::vec3(localPos.x, localPos.y, calculateZ(localPos.y) + localPos.z);
 }
 
 void Playfield::update(float dt) {
-    // Apply tilt rotation to transform
-    transform.rotation.x = tiltAngle;
+    (void)dt;
+}
+
+glm::mat4 Playfield::getModelMatrix() const {
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, baseHeight));
+    model = glm::rotate(model, glm::radians(tiltAngle), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::scale(model, transform.scale);
+    return model;
 }
 
 void Playfield::draw(unsigned int shaderProgram) const {
-    glm::mat4 model = glm::mat4(1.0f);
-    
-    // Apply position
-    model = glm::translate(model, transform.position);
-    
-    // Apply tilt rotation around X axis
-    model = glm::rotate(model, glm::radians(tiltAngle), glm::vec3(1.0f, 0.0f, 0.0f));
-    
-    // Apply scale
-    model = glm::scale(model, transform.scale);
-    
-    // Set uniforms directly using OpenGL
+    glm::mat4 model=getModelMatrix();
+
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
     glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, &color[0]);
-    
+    glUniform1f(glGetUniformLocation(shaderProgram, "shininess"), 40.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "objectAlpha"), 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "emissiveStrength"), 0.25f);
+    glUniform1i(glGetUniformLocation(shaderProgram, "useTexture"), mesh.hasTexture ? 1 : 0);
+    if (mesh.hasTexture) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, mesh.textureID);
+        glUniform1i(glGetUniformLocation(shaderProgram, "textureSampler"), 0);
+    }
     mesh.draw();
 }
