@@ -13,7 +13,7 @@ glm::mat4 Camera::getViewMatrix() const {
 }
 
 glm::mat4 Camera::getProjectionMatrix(float aspectRatio) const {
-    return glm::perspective(glm::radians(zoom), aspectRatio, 0.1f, 100.0f);
+    return glm::perspective(glm::radians(zoom), aspectRatio, 0.1f, 400.0f);
 }
 
 void Camera::processKeyboard(int direction, float deltaTime) {
@@ -50,15 +50,15 @@ void Camera::processMouseMovement(float xoffset, float yoffset, bool constrainPi
 
 void Camera::processMouseScroll(float yoffset) {
     zoom -= yoffset;
-    if (zoom < 1.0f) zoom = 1.0f;
-    if (zoom > 45.0f) zoom = 45.0f;
+    if (zoom < 25.0f) zoom = 25.0f;
+    if (zoom > 75.0f) zoom = 75.0f;
 }
 
 void Camera::updateCameraVectors() {
     glm::vec3 newFront;
-    newFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    newFront.y = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    newFront.z = sin(glm::radians(pitch));
+    newFront.x = std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch));
+    newFront.y = std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch));
+    newFront.z = std::sin(glm::radians(pitch));
     front = glm::normalize(newFront);
     
     right = glm::normalize(glm::cross(front, worldUp));
