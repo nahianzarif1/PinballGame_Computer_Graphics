@@ -1,365 +1,357 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
-#include <cmath>
+#include <algorithm>
+#include <cstdio>
+#include <filesystem>
+#include <fstream>
+#include <vector>
+#include <string>
 
 #include "Shader.h"
-#include "Camera.h"
-#include "PinballMachine.h"
-#include "Mesh.h"
+#include "GameHub.h"
+#include "RayTraceView.h"
 
-// Window settings
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
-// Global state
-PinballMachine* machine = nullptr;
+GameHub* hub = nullptr;
 Shader* phongShader = nullptr;
 Shader* gouraudShader = nullptr;
 Shader* flatShader = nullptr;
 float lastFrame = 0.0f;
 float deltaTime = 0.0f;
-
-// Control state
 bool firstMouse = true;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
+bool looking = false;
+RayTraceView* rayView=nullptr;
 
-// Function prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
-void renderUI(GLFWwindow* window);
 
-int main() {
-    // Initialize GLFW
-    glfwInit();
+static bool edge(GLFWwindow* window, int key, bool& latch) {
+    bool down = glfwGetKey(window, key) == GLFW_PRESS;
+    bool fired = down && !latch;
+    latch = down;
+    return fired;
+}
+
+int main(int argc, char** argv) {
+    std::string capturePath;
+    int captureFrames=60;
+    bool roomView=false, tableView=false, autoLaunch=false, lightsOff=false, fanOff=false;
+    bool rayTracing=false,doorOpen=false,dayMode=false,liveCapture=false;
+    int rayWidth=480,raySamples=4;
+    bool rayWidthSpecified=false,raySamplesSpecified=false;
+    ShadingMode captureShading=ShadingMode::PHONG;
+    for(int i=1;i<argc;++i) {
+        std::string arg=argv[i];
+        if(arg=="--capture" && i+1<argc) capturePath=argv[++i];
+        else if(arg=="--frames" && i+1<argc) captureFrames=std::max(1,std::atoi(argv[++i]));
+        else if(arg=="--room") roomView=true;
+        else if(arg=="--launch") autoLaunch=true;
+        else if(arg=="--table") tableView=true;
+        else if(arg=="--lights-off") lightsOff=true;
+        else if(arg=="--fan-off") fanOff=true;
+        else if(arg=="--raytrace")rayTracing=true;
+        else if(arg=="--capture-live")liveCapture=true;
+        else if(arg=="--door-open")doorOpen=true;
+        else if(arg=="--day")dayMode=true;
+        else if(arg=="--ray-width" && i+1<argc){rayWidth=std::clamp(std::atoi(argv[++i]),64,1920);rayWidthSpecified=true;}
+        else if(arg=="--ray-samples" && i+1<argc){raySamples=std::clamp(std::atoi(argv[++i]),1,64);raySamplesSpecified=true;}
+        else if(arg=="--shading" && i+1<argc) {
+            std::string mode=argv[++i];captureShading=mode=="flat" ? ShadingMode::FLAT : mode=="gouraud" ? ShadingMode::GOURAUD : ShadingMode::PHONG;
+            if(mode=="raytrace")rayTracing=true;
+        }
+    }
+    // Find assets beside the executable, so double-clicking or launching from
+    // another directory works as well as starting in the build folder.
+    auto assets=std::filesystem::absolute(argv[0]).parent_path();
+    if(std::filesystem::exists(assets/"shaders")) std::filesystem::current_path(assets);
+    if (!glfwInit()) { std::cerr<<"GLFW initialization failed\n";return 1; }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    
+    glfwWindowHint(GLFW_SAMPLES, 4);
+    if(!capturePath.empty())glfwWindowHint(GLFW_VISIBLE,GLFW_FALSE);
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-    
-    // Create window
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "3D Interactive Pinball Machine", NULL, NULL);
+
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Technology Gaming Lounge", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetScrollCallback(window, scroll_callback);
-    
-    // Capture mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    
-    // Load GLAD
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-    
-    // Enable depth testing
+
     glEnable(GL_DEPTH_TEST);
-    
-    // Load shaders
+    glEnable(GL_MULTISAMPLE);
+
     try {
         phongShader = new Shader("shaders/phong.vert", "shaders/phong.frag");
         gouraudShader = new Shader("shaders/gouraud.vert", "shaders/gouraud.frag");
         flatShader = new Shader("shaders/flat.vert", "shaders/flat.frag");
-    } catch (...) {
-        std::cout << "Failed to load shaders. Make sure shaders directory is in the build folder." << std::endl;
+        rayView = new RayTraceView();
+        std::cout << "Shaders loaded successfully" << std::endl;
+    } catch (const std::exception& error) {
+        std::cerr << error.what() << std::endl;
+        delete phongShader;delete gouraudShader;delete flatShader;
+        glfwDestroyWindow(window);glfwTerminate();
         return -1;
     }
-    
-    // Create pinball machine
-    machine = new PinballMachine();
-    
-    // Set clear color (dark background for better contrast)
-    glClearColor(0.05f, 0.05f, 0.08f, 1.0f);
-    
-    std::cout << "\n========================================" << std::endl;
-    std::cout << "   3D INTERACTIVE PINBALL MACHINE" << std::endl;
-    std::cout << "========================================\n" << std::endl;
-    std::cout << "CONTROLS:" << std::endl;
-    std::cout << "----------------------------------------" << std::endl;
-    std::cout << "OBJECT CONTROL:" << std::endl;
-    std::cout << "  TAB    - Select next object" << std::endl;
-    std::cout << "  W/S    - Move forward/backward" << std::endl;
-    std::cout << "  A/D    - Move left/right" << std::endl;
-    std::cout << "  Q/E    - Move up/down" << std::endl;
-    std::cout << "  Z/X    - Rotate (flippers only)" << std::endl;
-    std::cout << "  R      - Reset selected object" << std::endl;
-    std::cout << "\nLIGHT CONTROL:" << std::endl;
-    std::cout << "  F1/F2/F3 - Select Light 1/2/3" << std::endl;
-    std::cout << "  W/S/A/D/Q/E - Move selected light" << std::endl;
-    std::cout << "  +/-    - Adjust light intensity" << std::endl;
-    std::cout << "  R      - Reset selected light" << std::endl;
-    std::cout << "\nSHADING:" << std::endl;
-    std::cout << "  1      - Flat shading" << std::endl;
-    std::cout << "  2      - Gouraud shading" << std::endl;
-    std::cout << "  3      - Phong shading" << std::endl;
-    std::cout << "\nCAMERA:" << std::endl;
-    std::cout << "  Mouse  - Look around" << std::endl;
-    std::cout << "  Scroll - Zoom" << std::endl;
-    std::cout << "\nOTHER:" << std::endl;
-    std::cout << "  ESC    - Exit" << std::endl;
-    std::cout << "========================================\n" << std::endl;
-    
-    // Main game loop
+
+    hub = new GameHub();
+    if(roomView) hub->pinballCam=false;
+    if(tableView || autoLaunch) hub->pinballCam=true;
+    if(lightsOff) hub->toggleLights();
+    if(fanOff) hub->toggleFan();
+    if(doorOpen)hub->toggleDoor();
+    hub->setDayMode(dayMode);
+    hub->rayTracing=rayTracing;
+    hub->machine.setShadingMode(captureShading);
+    if(autoLaunch) hub->machine.launchFromLane(18);
+    int renderedFrames=0;
+    bool wasRayTracing=false;
+    unsigned int whiteTexture=0;
+    glGenTextures(1,&whiteTexture);glBindTexture(GL_TEXTURE_2D,whiteTexture);
+    const unsigned char whitePixel[3]={255,255,255};
+    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,1,1,0,GL_RGB,GL_UNSIGNED_BYTE,whitePixel);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+
+    std::cout << "\n========================================\n";
+    std::cout << "   GAME HUB PINBALL\n";
+    std::cout << "========================================\n";
+    std::cout << "PINBALL:\n";
+    std::cout << "  A / D     Left / right flipper\n";
+    std::cout << "  ENTER     Hold to charge, release to launch\n";
+    std::cout << "  SPACE     Launch ready ball\n";
+    std::cout << "  R         Reset complete game\n";
+    std::cout << "  C         Toggle pinball / hub camera\n";
+    std::cout << "ROOM:\n";
+    std::cout << "  W / S     Walk forward / back\n";
+    std::cout << "  Arrows    Strafe\n";
+    std::cout << "  Q / E     Up / down\n";
+    std::cout << "  RMB       Look around\n";
+    std::cout << "  F / LMB   Use wall switch\n";
+    std::cout << "  H         Restore reference room view\n";
+    std::cout << "ENVIRONMENT:\n";
+    std::cout << "  1         Room lights on/off\n";
+    std::cout << "  2         Ceiling fan on/off\n";
+    std::cout << "  3 / 4     Day / night\n";
+    std::cout << "  B / G / P Flat / Gouraud / Phong\n";
+    std::cout << "  T         Ray tracing on/off (CPU BVH, shadows, reflection, refraction)\n";
+    std::cout << "  O         Open/close refrigerator door\n";
+    std::cout << "  ESC       Exit\n";
+    std::cout << "========================================\n\n";
+
     while (!glfwWindowShouldClose(window)) {
-        // Calculate delta time
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = std::min(currentFrame - lastFrame, 0.1f);
+        if(!capturePath.empty()) deltaTime=1.0f/60;
         lastFrame = currentFrame;
-        
-        // Process input
+
         processInput(window);
-        
-        // Update machine
-        machine->update(deltaTime);
-        
-        // Render
+        hub->update(deltaTime);
+        if(hub->rayTracing!=wasRayTracing){rayView->invalidate();wasRayTracing=hub->rayTracing;}
+
+        glm::vec3 sky = hub->skyColor();
+        // Reset critical 3D render state every frame.  The HUD and transparent
+        // passes temporarily alter GL state, so doing this here guarantees the
+        // next 3D frame always starts from a known, visible configuration.
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+        glClearColor(sky.r, sky.g, sky.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        // Select shader based on shading mode
-        Shader* currentShader;
-        switch (machine->getShadingMode()) {
-            case ShadingMode::FLAT:
-                currentShader = flatShader;
-                break;
-            case ShadingMode::GOURAUD:
-                currentShader = gouraudShader;
-                break;
-            case ShadingMode::PHONG:
-            default:
-                currentShader = phongShader;
-                break;
+
+        Shader* currentShader = phongShader;
+        switch (hub->machine.getShadingMode()) {
+            case ShadingMode::FLAT: currentShader = flatShader; break;
+            case ShadingMode::GOURAUD: currentShader = gouraudShader; break;
+            default: currentShader = phongShader; break;
         }
-        
         currentShader->use();
-        
-        // Set view and projection matrices
-        glm::mat4 view = machine->camera.getViewMatrix();
-        glm::mat4 projection = machine->camera.getProjectionMatrix((float)SCR_WIDTH / (float)SCR_HEIGHT);
-        
+
+        int fbw = SCR_WIDTH, fbh = SCR_HEIGHT;
+        glfwGetFramebufferSize(window, &fbw, &fbh);
+        int viewW = std::max(1, static_cast<int>(fbw * 0.73f));
+        glViewport(0, 0, viewW, std::max(fbh, 1));
+
+        glm::mat4 view = hub->activeCamera().getViewMatrix();
+        glm::mat4 projection = hub->activeCamera().getProjectionMatrix((float)viewW / (float)std::max(fbh, 1));
         currentShader->setMat4("view", view);
         currentShader->setMat4("projection", projection);
-        
-        // Render machine
-        machine->render(currentShader->ID);
-        
-        // Render UI info
-        renderUI(window);
-        
-        // Swap buffers and poll events
+
+        bool rayReady=false;
+        if(hub->rayTracing) {
+            if(!capturePath.empty() && !liveCapture) {
+                if(renderedFrames+1>=captureFrames) {
+                    rayView->capture(*hub,viewW,std::max(fbh,1),rayWidth,raySamples);rayReady=true;
+                }
+            } else rayReady=rayView->update(*hub,viewW,std::max(fbh,1),rayWidthSpecified ? rayWidth : 0,
+                                            raySamplesSpecified ? raySamples : 0);
+            hub->rayFrameMilliseconds=rayView->milliseconds();
+            hub->rayFrameWidth=rayView->width();hub->rayRefining=rayView->refining();
+        }
+        if(rayReady)rayView->draw();
+        else {
+            glActiveTexture(GL_TEXTURE0);glBindTexture(GL_TEXTURE_2D,whiteTexture);
+            hub->render(currentShader->ID);
+        }
+
+        glViewport(0, 0, fbw, std::max(fbh, 1));
+        hub->renderHUD(fbw, fbh);
+
+        char title[128];
+        std::snprintf(title, sizeof(title), "GameHub Pinball  |  %s  |  %s  |  Score %06d  |  %d FPS",
+                      hub->pinballCam ? "Table Cam" : "Technology Lounge",
+                      hub->rayTracing ? (rayReady ? (rayView->refining()?"Ray tracing: refining":"Ray tracing") : "Ray tracing: rendering") : "Raster",
+                      hub->machine.score,
+                      std::max(1, static_cast<int>(1.0f / std::max(deltaTime, 0.0001f))));
+        glfwSetWindowTitle(window, title);
+
+        if(!capturePath.empty() && ++renderedFrames>=captureFrames &&
+           (!hub->rayTracing || !liveCapture || (rayReady&&!rayView->refining()))) {
+            std::vector<unsigned char> pixels(static_cast<size_t>(fbw)*fbh*3);
+            glPixelStorei(GL_PACK_ALIGNMENT,1);
+            glReadPixels(0,0,fbw,fbh,GL_RGB,GL_UNSIGNED_BYTE,pixels.data());
+            std::ofstream out(capturePath,std::ios::binary);
+            out<<"P6\n"<<fbw<<" "<<fbh<<"\n255\n";
+            for(int y=fbh-1;y>=0;--y) out.write(reinterpret_cast<const char*>(pixels.data()+static_cast<size_t>(y)*fbw*3),fbw*3);
+            std::cout<<"Captured frame: "<<capturePath<<" | score "<<hub->machine.score<<" | state "<<static_cast<int>(hub->machine.ballState)
+                     <<" | renderer "<<(rayReady ? "ray tracing" : "raster")<<" | ray frame "<<hub->rayFrameMilliseconds<<" ms\n";
+            if(rayReady)std::cout<<"Ray image detail: "<<rayView->width()<<" pixels wide, "<<rayView->samples()<<" samples/pixel\n";
+            glfwSetWindowShouldClose(window,true);
+        }
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    
-    // Cleanup
-    delete machine;
+
+    glDeleteTextures(1,&whiteTexture);
+    delete hub;
     delete phongShader;
     delete gouraudShader;
     delete flatShader;
-    
+    delete rayView;rayView=nullptr;
+    glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
 }
 
 void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
-    
-    // Camera movement (WASD + QE for up/down)
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-        // Shift held - camera movement
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            machine->camera.processKeyboard(0, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            machine->camera.processKeyboard(1, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            machine->camera.processKeyboard(2, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            machine->camera.processKeyboard(3, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-            machine->camera.processKeyboard(4, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-            machine->camera.processKeyboard(5, deltaTime);
-    } else {
-        // No shift - object/light control
-        glm::vec3 movement(0.0f);
-        
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            movement.y = 1.0f;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            movement.y = -1.0f;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            movement.x = -1.0f;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            movement.x = 1.0f;
-        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-            movement.z = 1.0f;
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-            movement.z = -1.0f;
-        
-        if (movement != glm::vec3(0.0f)) {
-            if (machine->selectionMode == SelectionMode::OBJECT) {
-                machine->moveSelectedObject(movement);
-            } else {
-                machine->moveSelectedLight(movement);
-            }
+    }
+
+    bool leftFlip = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
+    bool rightFlip = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
+    bool pull = glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS ||
+                glfwGetKey(window, GLFW_KEY_KP_ENTER) == GLFW_PRESS;
+    hub->machine.setLeftFlipperPowered(leftFlip);
+    hub->machine.setRightFlipperPowered(rightFlip);
+    if(pull && hub->machine.ballState==BallState::READY && !hub->machine.gameOver) hub->pinballCam=true;
+    hub->machine.setPlungerPulling(pull);
+
+    Camera& cam = hub->activeCamera();
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cam.processKeyboard(0, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cam.processKeyboard(1, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) cam.processKeyboard(2, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) cam.processKeyboard(3, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) cam.processKeyboard(4, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) cam.processKeyboard(5, deltaTime);
+
+    static bool k1 = false, k2 = false, k3 = false, k4 = false, kC = false, kR = false, kSpace = false;
+    static bool kB = false, kG = false, kP = false, kT=false, kO=false, kF=false, kH=false;
+
+    if (edge(window, GLFW_KEY_1, k1)) hub->toggleLights();
+    if (edge(window, GLFW_KEY_2, k2)) hub->toggleFan();
+    if (edge(window, GLFW_KEY_O, kO)) hub->toggleDoor();
+    if (edge(window, GLFW_KEY_T, kT)) hub->toggleRayTracing();
+    if (edge(window, GLFW_KEY_3, k3)) hub->setDayMode(true);
+    if (edge(window, GLFW_KEY_4, k4)) hub->setDayMode(false);
+    if (edge(window, GLFW_KEY_C, kC)) hub->toggleCamera();
+    if (edge(window, GLFW_KEY_F, kF)) hub->interactSwitches(cam.position,cam.front);
+    if (edge(window, GLFW_KEY_H, kH)) {hub->resetRoomCamera();hub->pinballCam=false;}
+    if (edge(window, GLFW_KEY_R, kR)) hub->resetAll();
+    if (edge(window, GLFW_KEY_SPACE, kSpace)) {
+        if(hub->machine.ballState==BallState::READY && !hub->machine.gameOver) hub->pinballCam=true;
+        hub->machine.launchFromLane(18.0f);
+    }
+    if (edge(window, GLFW_KEY_B, kB)) hub->setShadingMode(ShadingMode::FLAT);
+    if (edge(window, GLFW_KEY_G, kG)) hub->setShadingMode(ShadingMode::GOURAUD);
+    if (edge(window, GLFW_KEY_P, kP)) hub->setShadingMode(ShadingMode::PHONG);
+}
+
+void framebuffer_size_callback(GLFWwindow*, int width, int height) {
+    glViewport(0, 0, std::max(width, 1), std::max(height, 1));
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int) {
+    if(button==GLFW_MOUSE_BUTTON_LEFT && action==GLFW_PRESS && hub && !hub->pinballCam && !looking) {
+        double mouseX=0,mouseY=0;int width=1,height=1,fbw=1,fbh=1;
+        glfwGetCursorPos(window,&mouseX,&mouseY);glfwGetWindowSize(window,&width,&height);glfwGetFramebufferSize(window,&fbw,&fbh);
+        float x=static_cast<float>(mouseX)*fbw/std::max(1,width),y=static_cast<float>(mouseY)*fbh/std::max(1,height);
+        int control=hub->hud.roomSwitchAt(x,fbh-y,fbw,fbh);
+        if(control==1)hub->toggleLights();
+        else if(control==2)hub->toggleFan();
+        else if(control>=3 && control<=5)hub->setShadingMode(static_cast<ShadingMode>(control-3));
+        else if(control==6){hub->toggleRayTracing();rayView->invalidate();}
+        else if(control==7)hub->toggleDoor();
+        else if(x<fbw*.73f) {
+            glm::vec4 clip(2*x/(fbw*.73f)-1,1-2*y/std::max(1,fbh),-1,1);
+            auto& camera=hub->activeCamera();
+            glm::vec4 eye=glm::inverse(camera.getProjectionMatrix(fbw*.73f/std::max(1,fbh)))*clip;
+            eye.z=-1;eye.w=0;
+            glm::vec3 direction=glm::normalize(glm::vec3(glm::inverse(camera.getViewMatrix())*eye));
+            hub->interactSwitches(camera.position,direction);
         }
-        
-        // Rotation for flippers
-        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-            machine->rotateSelectedObject(-1.0f);
-        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-            machine->rotateSelectedObject(1.0f);
-        
-        // Light intensity
-        if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
-            machine->adjustLightIntensity(1.0f);
-        if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
-            machine->adjustLightIntensity(-1.0f);
-        
-        // Reset
-        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-            if (machine->selectionMode == SelectionMode::OBJECT) {
-                machine->resetSelectedObject();
-            } else {
-                machine->resetSelectedLight();
-            }
-        }
     }
-    
-    // Object selection (TAB)
-    static bool tabPressed = false;
-    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS && !tabPressed) {
-        machine->selectNextObject();
-        tabPressed = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE) {
-        tabPressed = false;
-    }
-    
-    // Light selection (F1, F2, F3)
-    static bool f1Pressed = false;
-    static bool f2Pressed = false;
-    static bool f3Pressed = false;
-    
-    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS && !f1Pressed) {
-        machine->selectLight(0);
-        f1Pressed = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_RELEASE) {
-        f1Pressed = false;
-    }
-    
-    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && !f2Pressed) {
-        machine->selectLight(1);
-        f2Pressed = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_RELEASE) {
-        f2Pressed = false;
-    }
-    
-    if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS && !f3Pressed) {
-        machine->selectLight(2);
-        f3Pressed = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_RELEASE) {
-        f3Pressed = false;
-    }
-    
-    // Shading mode (1, 2, 3)
-    static bool key1Pressed = false;
-    static bool key2Pressed = false;
-    static bool key3Pressed = false;
-    
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !key1Pressed) {
-        machine->setShadingMode(ShadingMode::FLAT);
-        key1Pressed = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE) {
-        key1Pressed = false;
-    }
-    
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && !key2Pressed) {
-        machine->setShadingMode(ShadingMode::GOURAUD);
-        key2Pressed = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE) {
-        key2Pressed = false;
-    }
-    
-    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS && !key3Pressed) {
-        machine->setShadingMode(ShadingMode::PHONG);
-        key3Pressed = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_RELEASE) {
-        key3Pressed = false;
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        looking = (action == GLFW_PRESS);
+        glfwSetInputMode(window, GLFW_CURSOR, looking ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+        firstMouse = true;
     }
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
-}
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+void mouse_callback(GLFWwindow*, double xpos, double ypos) {
+    if (!looking || !hub) {
+        firstMouse = true;
+        return;
+    }
     if (firstMouse) {
-        lastX = xpos;
-        lastY = ypos;
+        lastX = static_cast<float>(xpos);
+        lastY = static_cast<float>(ypos);
         firstMouse = false;
     }
-    
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    
-    lastX = xpos;
-    lastY = ypos;
-    
-    machine->camera.processMouseMovement(xoffset, yoffset);
+    float xoffset = static_cast<float>(xpos) - lastX;
+    float yoffset = lastY - static_cast<float>(ypos);
+    lastX = static_cast<float>(xpos);
+    lastY = static_cast<float>(ypos);
+    hub->activeCamera().processMouseMovement(xoffset, yoffset);
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-    machine->camera.processMouseScroll(yoffset);
-}
-
-void renderUI(GLFWwindow* window) {
-    // Simple console-based UI info (could be extended with text rendering)
-    static int frameCount = 0;
-    static float lastUIUpdate = 0.0f;
-    
-    frameCount++;
-    float currentTime = glfwGetTime();
-    
-    if (currentTime - lastUIUpdate >= 1.0f) {
-        std::string modeStr;
-        switch (machine->getShadingMode()) {
-            case ShadingMode::FLAT: modeStr = "FLAT"; break;
-            case ShadingMode::GOURAUD: modeStr = "GOURAUD"; break;
-            case ShadingMode::PHONG: modeStr = "PHONG"; break;
-        }
-        
-        std::string selectionStr;
-        if (machine->selectionMode == SelectionMode::OBJECT) {
-            const char* objectNames[] = {"Ball", "Bumper 1", "Bumper 2", "Bumper 3", "Left Flipper", "Right Flipper", "Plunger"};
-            selectionStr = "OBJECT: " + std::string(objectNames[machine->selectedObjectIndex]);
-        } else {
-            selectionStr = "LIGHT: " + std::to_string(machine->selectedLightIndex + 1);
-        }
-        
-        glfwSetWindowTitle(window, ("3D Pinball - " + modeStr + " - " + selectionStr + " - " + std::to_string(frameCount) + " FPS").c_str());
-        
-        frameCount = 0;
-        lastUIUpdate = currentTime;
+void scroll_callback(GLFWwindow*, double, double yoffset) {
+    if (hub) {
+        hub->activeCamera().processMouseScroll(static_cast<float>(yoffset));
     }
 }
