@@ -1,0 +1,228 @@
+{
+  "prepared_on": "2026-10-13",
+  "code_base_commit": "ffc5978afe4e4ab82ed0a35dbab1dd76ade115aa",
+  "source_recording": {
+    "filename": "Screen Recording 2026-10-09 at 9.57.47\u202fPM.mov",
+    "sha256": "6126c9c83b8273a528f1afb0485a465103a6bb0ad926a0c217a5e17ddb981b40"
+  },
+  "videos": [
+    {
+      "file": "docs/media/full-demo.mp4",
+      "codec": "H.264",
+      "duration_seconds": 135.05666666666667,
+      "decoded_frames": 7438,
+      "dimensions": [
+        1280,
+        792
+      ],
+      "network_optimized": true,
+      "size_bytes": 18708968,
+      "sha256": "0eaa92a6f0e256603f7218e7dc949478a6d88b6d55786e6fb19ed31307e6123d"
+    },
+    {
+      "file": "docs/media/gameplay-demo.mp4",
+      "codec": "H.264",
+      "duration_seconds": 28.0,
+      "decoded_frames": 1505,
+      "dimensions": [
+        1280,
+        792
+      ],
+      "network_optimized": true,
+      "size_bytes": 3949052,
+      "sha256": "9948ccd015b54ed7acc12063049a5780e129f31b91bfdc7a018f0dfa80584624"
+    },
+    {
+      "file": "docs/media/room-tour.mp4",
+      "codec": "H.264",
+      "duration_seconds": 18.0,
+      "decoded_frames": 1021,
+      "dimensions": [
+        1280,
+        792
+      ],
+      "network_optimized": true,
+      "size_bytes": 2456787,
+      "sha256": "849caa8c71ac4042720e54734b5b49ae2bba7da21a1be675c81e01bc2bddb21f"
+    }
+  ],
+  "animations": [
+    {
+      "file": "docs/media/demo-preview.gif",
+      "frames": 80,
+      "duration_ms": 10000,
+      "dimensions": [
+        800,
+        495
+      ]
+    },
+    {
+      "file": "docs/media/door-animation.gif",
+      "frames": 63,
+      "duration_ms": 4000,
+      "dimensions": [
+        800,
+        500
+      ]
+    },
+    {
+      "file": "docs/media/fan-animation.gif",
+      "frames": 76,
+      "duration_ms": 4000,
+      "dimensions": [
+        800,
+        500
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "docs/screenshots/active-gameplay.png",
+      "size_bytes": 547493,
+      "sha256": "890a3480b7d49a898640de98ad517f77a15c07cc15ac6788386bee39115f448f"
+    },
+    {
+      "file": "docs/screenshots/ball-save.png",
+      "size_bytes": 547879,
+      "sha256": "e9d6f008fd56d272645fdc8f8cbc7fa82ae2ef54343352a1bd8e0256fb19fa77"
+    },
+    {
+      "file": "docs/screenshots/bumper-hit.png",
+      "size_bytes": 545733,
+      "sha256": "9dc5b23d31ac018035d9e5568a25c3fed93f6893ab5460d2ce2c0d5ffad6d0f5"
+    },
+    {
+      "file": "docs/screenshots/camera-exploration.png",
+      "size_bytes": 461980,
+      "sha256": "f50512b96233b882a735b79aa5fddda8105a045b5ae919ee2837b8d8dae7e305"
+    },
+    {
+      "file": "docs/screenshots/day-mode.png",
+      "size_bytes": 391831,
+      "sha256": "630e2f59f5d4a90f972cc6a6bbe69b90f57e03a9c6b2ca58512ce5986c0d4e47"
+    },
+    {
+      "file": "docs/screenshots/drain-bonus.png",
+      "size_bytes": 549875,
+      "sha256": "5d4f4614401f6a05ec45f48558721784fa735cc203ef889d168a16dab3ea898a"
+    },
+    {
+      "file": "docs/screenshots/fan-running.png",
+      "size_bytes": 210220,
+      "sha256": "83b8a806057edf1f1344174c735d5a08daa61de1dc955c4903df691d798f0146"
+    },
+    {
+      "file": "docs/screenshots/fan-stopped.png",
+      "size_bytes": 210532,
+      "sha256": "417ee311ffaea6171531830a9ff021d6779dfc9e67244290091b31daa8eb19dc"
+    },
+    {
+      "file": "docs/screenshots/flippers-powered.png",
+      "size_bytes": 546776,
+      "sha256": "13a0157c54f656a643c47ccb55d45bb7eca1c469e902f616ac20f4154b37d8dc"
+    },
+    {
+      "file": "docs/screenshots/fridge-closed.png",
+      "size_bytes": 158367,
+      "sha256": "825fb95de0e9f4782ff3a93dc3f4883ea4ad0b7cf78258d82db6e93db07ba22d"
+    },
+    {
+      "file": "docs/screenshots/fridge-open.png",
+      "size_bytes": 158856,
+      "sha256": "5c3f2b3cf30752d10aeee66442d7c72389344faeed5b2e6c78edacbab69054bd"
+    },
+    {
+      "file": "docs/screenshots/game-over.png",
+      "size_bytes": 548897,
+      "sha256": "019b319c7a7ea16201d4f5c1bca361a4d39d19c1900972ae8954b590c048b35d"
+    },
+    {
+      "file": "docs/screenshots/glass-raytrace.png",
+      "size_bytes": 184671,
+      "sha256": "febb2e99a31bcd78fba509402d12dd11774ced04af9342b8666b3fc894cb57b1"
+    },
+    {
+      "file": "docs/screenshots/lights-off.png",
+      "size_bytes": 241480,
+      "sha256": "15d3fcdfefaeddd4eb85cdb478ee3220463b13808c14c232565a5b6786eb341e"
+    },
+    {
+      "file": "docs/screenshots/orbit-hit.png",
+      "size_bytes": 545648,
+      "sha256": "ac111f782a414761e4f97216ac1b72c1907b1740c47e77e1680aa4e0e87d2d28"
+    },
+    {
+      "file": "docs/screenshots/plunger-charged.png",
+      "size_bytes": 547553,
+      "sha256": "942d91850402e1a0e15ceceba03ac494210bc823d0790445cb257b7821568db3"
+    },
+    {
+      "file": "docs/screenshots/project-overview.png",
+      "size_bytes": 592106,
+      "sha256": "fcd52ac53dc091f1d34cd11866ad2007e24d791229126df8be152329a3bfd533"
+    },
+    {
+      "file": "docs/screenshots/restart-session-best.png",
+      "size_bytes": 549031,
+      "sha256": "90320505eda4f17b8220b389b8bbf712b6908e3ad9e7e4964ae1ec72255db4f8"
+    },
+    {
+      "file": "docs/screenshots/room-overview.png",
+      "size_bytes": 396331,
+      "sha256": "ece107d7ed58b51d347be6543d80923961accfa1f2638438a37b3234eee7f589"
+    },
+    {
+      "file": "docs/screenshots/room-raytrace.png",
+      "size_bytes": 448008,
+      "sha256": "d6520ed88bddfbcbb9bf6f70e940a559fdf07146cf661e64b038d9f072e5796d"
+    },
+    {
+      "file": "docs/screenshots/shading-flat.png",
+      "size_bytes": 365049,
+      "sha256": "305e85be4b847f036ea0e896cb58ca094b81ec1cfbd2b560d0c25335b7c24792"
+    },
+    {
+      "file": "docs/screenshots/shading-gouraud.png",
+      "size_bytes": 331144,
+      "sha256": "7480f85b03259db4402691d9fb67ae0a47690360d5f4ca45fc970b76085cf8d0"
+    },
+    {
+      "file": "docs/screenshots/shading-phong.png",
+      "size_bytes": 396331,
+      "sha256": "ece107d7ed58b51d347be6543d80923961accfa1f2638438a37b3234eee7f589"
+    },
+    {
+      "file": "docs/screenshots/slingshot-hit.png",
+      "size_bytes": 546521,
+      "sha256": "742b5adf47ce1e3f2e3363a112bdaa0bf3df786be3d1acba56f24d117e4463ac"
+    },
+    {
+      "file": "docs/screenshots/table-raytrace.png",
+      "size_bytes": 592178,
+      "sha256": "860423270134a71aae25fe0d5f2ba62e63c783e85d4fd50257a337c08c0f3941"
+    },
+    {
+      "file": "docs/screenshots/table-ready.png",
+      "size_bytes": 548222,
+      "sha256": "d9c1544ed3a656e1f46120c5f2b6050ed19131eb7d6305ecc1ea23837f806446"
+    },
+    {
+      "file": "docs/screenshots/target-bank.png",
+      "size_bytes": 549127,
+      "sha256": "3e0cf71d7f537a062fb1dee489f590c9f91ccd6a7e74b6ba4c1e101ded23b2f2"
+    },
+    {
+      "file": "docs/screenshots/wall-switches.png",
+      "size_bytes": 186382,
+      "sha256": "58b64598ec6365ab35d4f3df22a81df7ca00435959f825431d82948060bf96f7"
+    }
+  ],
+  "validation": {
+    "local_links_checked": 128,
+    "screenshot_count": 28,
+    "feature_screenshot_count": 27,
+    "application_source_unchanged": true,
+    "full_video_decodes": true,
+    "all_animation_frames_decoded": true
+  }
+}
